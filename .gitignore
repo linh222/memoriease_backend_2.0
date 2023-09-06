@@ -1,0 +1,10 @@
+/app/models
+/elasticsearch-data
+/app/evaluation_model
+.env
+/app/__pycache__/
+/app/*/__pycache__/
+/app/*/*/__pycache__/
+./.idea
+.idea
+/app/predictions/mysceal_nlp_utils/__pycache__
