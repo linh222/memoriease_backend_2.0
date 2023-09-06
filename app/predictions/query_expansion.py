@@ -1,19 +1,15 @@
+import json
 import os
 
-from app.predictions.utils import process_query, construct_filter, build_query_template
-import requests
-import json
-import torch
-from elasticsearch import Elasticsearch
 import openai
-from app.config import settings, HOST, root_path, INDICES
-from app.predictions.blip_extractor import extract_query_blip_embedding
-import json
-from LAVIS.lavis.models import load_model_and_preprocess
-import requests
-from app.predictions.predict import retrieve_image
+import torch
 from dotenv import load_dotenv
-load_dotenv(str(root_path)+'/.env')
+
+from LAVIS.lavis.models import load_model_and_preprocess
+from app.config import root_path
+from app.predictions.predict import retrieve_image
+
+load_dotenv(str(root_path) + '/.env')
 openai.api_key = os.environ.get("openai_key")
 
 
@@ -75,7 +71,7 @@ if __name__ == "__main__":
                                                                       model_type="coco", is_eval=True,
                                                                       device=device)
     print("cuda" if torch.cuda.is_available() else "cpu")
-    print(time.time()-start_time, 'seconds')
+    print(time.time() - start_time, 'seconds')
 
     result = query_expansion(concept_query="""Exotic birds. Find examples of multicoloured parrots (real or fake) in a
     tree at our rented house in Thailand.""", embed_model=model, txt_processor=txt_processors)

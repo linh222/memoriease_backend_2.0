@@ -1,24 +1,20 @@
-from app.predictions.utils import process_query, construct_filter, build_query_template
-import requests
 import json
-import torch
-from elasticsearch import Elasticsearch
 
-from app.config import settings, HOST, root_path, INDICES
-from app.predictions.blip_extractor import extract_query_blip_embedding
-import json
-from LAVIS.lavis.models import load_model_and_preprocess
 import requests
+
+from app.config import HOST, INDICES
+from app.predictions.blip_extractor import extract_query_blip_embedding
+from app.predictions.utils import process_query, construct_filter, build_query_template
 
 
 def retrieve_image(
-    concept_query: str,
-    embed_model,
-    txt_processor,
-    semantic_name="",
-    start_hour="",
-    end_hour="",
-    is_weekend="",
+        concept_query: str,
+        embed_model,
+        txt_processor,
+        semantic_name="",
+        start_hour="",
+        end_hour="",
+        is_weekend="",
 ):
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(concept_query)
 
@@ -51,20 +47,19 @@ def retrieve_image(
             ValueError(e)
             return None
 
-
-if __name__ == "__main__":
-    # Remote server
-    import time
-
-    start_time = time.time()
-    device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
-    model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
-                                                                      model_type="coco", is_eval=True,
-                                                                      device=device)
-    print("cuda" if torch.cuda.is_available() else "cpu")
-    print(time.time() - start_time, 'seconds')
-
-    result = retrieve_image(concept_query="""Exotic birds. Find examples of multicoloured parrots (real or fake) in a 
-    tree at our rented house in Thailand.""", embed_model=model, txt_processor=txt_processors)
-    with open('{}/app/evaluation_model/result.json'.format(root_path), 'w') as f:
-        json.dump(result['hits']['hits'], f)
+# if __name__ == "__main__":
+#     # Remote server
+#     import time
+#
+#     start_time = time.time()
+#     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
+#     model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
+#                                                                       model_type="coco", is_eval=True,
+#                                                                       device=device)
+#     print("cuda" if torch.cuda.is_available() else "cpu")
+#     print(time.time() - start_time, 'seconds')
+#
+#     result = retrieve_image(concept_query="""Exotic birds. Find examples of multicoloured parrots (real or fake) in a
+#     tree at our rented house in Thailand.""", embed_model=model, txt_processor=txt_processors)
+#     with open('{}/app/evaluation_model/result.json'.format(root_path), 'w') as f:
+#         json.dump(result['hits']['hits'], f)

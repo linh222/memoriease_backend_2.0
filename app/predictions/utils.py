@@ -275,7 +275,6 @@ def construct_filter(query_dict):
 
 def build_query_template(filter, must, text_embedding, size=100):
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id']
-    print(filter)
     query_template = {
 
         "knn": {
