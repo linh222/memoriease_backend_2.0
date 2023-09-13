@@ -132,6 +132,9 @@ async def predict_image_peuso_rf(feature: FeatureModelSingleNTCIRSearch, api_key
     results = [{'current_event': result} for result in raw_result['hits']['hits']]
     results = add_image_link(results)
 
+    # Automatic run Logging query string
+    automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
+
     return results
 
 

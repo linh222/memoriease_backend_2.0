@@ -26,10 +26,10 @@ def retrieve_image(
         "list_keyword": list_keyword,
         "weekday": weekday,
         "time_filter": time_filter,
-        "semantic_name": semantic_name,
-        "start_hour": start_hour,
-        "end_hour": end_hour,
-        "is_weekend": is_weekend,
+        "semantic_name": semantic_name if semantic_name is not None else '',
+        "start_hour": start_hour if start_hour is not None else '',
+        "end_hour": end_hour if end_hour is not None else '',
+        "is_weekend": is_weekend if is_weekend is not None else '',
     }
 
     filter, must = construct_filter(query_dict)
