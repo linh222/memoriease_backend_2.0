@@ -19,7 +19,7 @@ CE_PATH = os.environ.get('ce_path')
 HOST = os.environ.get('host')
 INDICES = os.environ.get('indices')
 IMAGE_SERVER = os.environ.get('image_server')
-
+GROUP_INDICES = os.environ.get('group_indices')
 
 def get_project_root() -> Path:
     return Path(__file__).parent.parent

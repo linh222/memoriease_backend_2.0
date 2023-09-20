@@ -270,11 +270,18 @@ def construct_filter(query_dict):
                     'is_weekend': query_dict['is_weekend']
                 }
             })
+    if 'groups' in query_dict:
+        if query_dict['groups'] != '':
+            filter.append({
+                "terms": {
+                    'group': query_dict['groups']
+                }
+            })
     return filter, must
 
 
 def build_query_template(filter, must, text_embedding, size=100):
-    col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id']
+    col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id', 'similar_image', 'event', 'group']
     query_template = {
 
         "knn": {
