@@ -5,11 +5,13 @@ import torch
 from elasticsearch import Elasticsearch
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import APIKey
+import boto3
+from io import StringIO
 
 from LAVIS.lavis.models import load_model_and_preprocess
 from app.api_key import get_api_key
 from app.apis.api_utils import add_image_link, RequestTimestampMiddleware, metadata_logging2file
-from app.config import HOST, root_path
+from app.config import HOST, root_path, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET
 from app.predictions.predict import retrieve_image
 from app.predictions.relevance_feedback import relevance_image_similar, calculate_mean_emb, pseudo_relevance_feedback
 from app.predictions.temporal_predict import temporal_search
@@ -34,12 +36,16 @@ def initialize_resources():
     model, vis_processors, txt_processor = load_model_and_preprocess(
         name="blip2_feature_extractor", model_type="coco", is_eval=True, device=device
     )
+    s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
+
 
     print('Loading model successfully at')
     print("cuda" if torch.cuda.is_available() else "cpu")
 
-    df_main_event = pd.read_csv('{}/app/models/event_segmentation_appoarch2_0_75.csv'.format(root_path))
-
+    # df_main_event = pd.read_csv('{}/app/models/event_segmentation_appoarch2_0_75.csv'.format(root_path))
+    response = s3.get_object(Bucket=BUCKET, Key='event_segmentation_appoarch2_0_75.csv')
+    csv_data = response['Body'].read().decode('utf-8')
+    df_main_event = pd.read_csv(StringIO(csv_data))
 
 @router.post(
     "/predict",
