@@ -5,8 +5,9 @@ from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from tqdm import tqdm
-
-from config import HOST, root_path
+import boto3
+from io import StringIO
+from config import HOST, root_path, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET
 
 dotenv_path = join(dirname(__file__), '../.env')
 load_dotenv(dotenv_path)
@@ -32,11 +33,11 @@ schema = {
         }
     }
 }
-es.indices.create(index='linh_lsc23_blip2_no_eventsegmentation', body=schema)
-
-df = pd.read_json(
-    '{}/elasticsearch-data/grouped_info_dict_full_blip2_no_eventsegmtation_add_hour_weekend.json'.format(root_path),
-    orient='index')
+es.indices.create(index='linh_lsc23_blip2_1', body=schema)
+s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
+response = s3.get_object(Bucket=BUCKET, Key='grouped_info_dict_full_blip2_no_eventsegmtation_add_hour_weekend.json')
+csv_data = response['Body'].read()
+df = pd.read_json(StringIO(csv_data), orient='index')
 df['index'] = df['ImageID']
 
 
