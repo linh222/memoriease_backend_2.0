@@ -10,6 +10,8 @@ load_dotenv(dotenv_path)
 
 API_KEY = os.environ.get("API_KEY")
 API_KEY_NAME = os.environ.get("API_KEY_NAME")
+AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
+AWS_SECRET_KEY = os.environ.get("AWS_SECRET_KEY")
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')
 SENTRY_DSN = os.environ.get("SENTRY_DSN", '')
 SENTRY_TRACE_SAMPLE_RATE = float(os.environ.get('SENTRY_TRACE_SAMPLE_RATE', 0))
@@ -20,7 +22,7 @@ HOST = os.environ.get('host')
 INDICES = os.environ.get('indices')
 IMAGE_SERVER = os.environ.get('image_server')
 GROUP_INDICES = os.environ.get('group_indices')
-
+BUCKET = os.environ.get('bucket')
 def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
