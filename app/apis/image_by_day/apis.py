@@ -4,10 +4,15 @@ import pandas as pd
 from fastapi import APIRouter, status
 
 from app.apis.image_by_day.schema import FeatureModelImage
-from app.config import root_path, IMAGE_SERVER
-
+from app.config import root_path, IMAGE_SERVER, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET
+import boto3
+from io import StringIO
 router = APIRouter()
-df_image = pd.read_csv('{}/app/models/image_by_event_for_visualization1.csv'.format(root_path))
+
+s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
+response = s3.get_object(Bucket=BUCKET, Key='image_by_event_for_visualization1.csv')
+csv_data = response['Body'].read().decode('utf-8')
+df_image = pd.read_csv(StringIO(csv_data))
 
 
 def generate_image_link(image_id):
