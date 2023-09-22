@@ -39,7 +39,7 @@ schema = {
 result = create_index(es=es, HOST=HOST, indice=INDICES, schema=schema)
 
 response = s3.get_object(Bucket=BUCKET, Key='grouped_info_dict_full_blip2_no_eventsegmtation_add_hour_weekend.json')
-json_data = response['Body'].read()
+json_data = response['Body'].read().decode('utf-8')
 df = pd.read_json(
     StringIO(json_data),
     orient='index')

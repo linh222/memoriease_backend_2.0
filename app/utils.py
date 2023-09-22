@@ -6,6 +6,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from tqdm import tqdm
 import requests
+import json
 
 from config import HOST, root_path
 
