@@ -4,13 +4,14 @@ from os.path import join, dirname
 import pandas as pd
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
+import boto3
 
-from config import HOST, INDICES
+from config import HOST, INDICES, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET
 from utils import create_index, index_data2elasticsearch
 
 dotenv_path = join(dirname(__file__), '../.env')
 load_dotenv(dotenv_path)
-
+s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
 es = Elasticsearch(hosts=[HOST], timeout=100)
 schema = {
     "mappings": {
@@ -36,7 +37,7 @@ schema = {
 }
 result = create_index(es=es, HOST=HOST, indice=INDICES, schema=schema)
 response = s3.get_object(Bucket=BUCKET, Key='grouped_info_dict_full_blip2.json')
-json_data = response['Body'].read()
+json_data = response['Body'].read().decode('utf-8')
 df = pd.read_json(
     StringIO(json_data),
     orient='index')
