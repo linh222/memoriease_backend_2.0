@@ -13,6 +13,7 @@ from config import HOST, root_path
 dotenv_path = join(dirname(__file__), '../.env')
 load_dotenv(dotenv_path)
 
+
 def row_to_dict(row):
     # Convert timestamps to ISO formatted strings
     row['local_time'] = row['local_time'].isoformat()
@@ -25,21 +26,21 @@ def create_index(es, HOST, indice, schema):
 
 
 def index_data2elasticsearch(df, indice, host=HOST):
-  for i in tqdm(range(df.shape[0])):
-    data = row_to_dict(df.iloc[i, :])
-    json_data = json.dumps(data)
-    url = f"{host}/{indice}/_doc/{i}"
+    for i in tqdm(range(df.shape[0])):
+        data = row_to_dict(df.iloc[i, :])
+        json_data = json.dumps(data)
+        url = f"{host}/{indice}/_doc/{i}"
 
-    # Send a POST request to index the document
-    response = requests.post(url, data=json_data, headers={"Content-Type": "application/json"})
+        # Send a POST request to index the document
+        response = requests.post(url, data=json_data, headers={"Content-Type": "application/json"})
 
-    # Check the response
-    if response.status_code != 201:
-        ValueError(f"Fail for row: {i}")
+        # Check the response
+        if response.status_code != 201:
+            ValueError(f"Fail for row: {i}")
     return True
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     schema = {
         "mappings": {
             "properties": {
