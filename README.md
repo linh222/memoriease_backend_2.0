@@ -62,18 +62,16 @@ request methods, and expected responses.
 + /predict: POST to predict for lsc23, with following parameter
   + query: full text query, that can be auto filter
   + topic: topic name for logging
+  + semantic_name: the semantic name for filtering
+  + start_hour: (optional) 0-> 23 for filtering start hour of event
+  + end_hour: (optional) 0-> 23 for filtering end hour of event
+  + is_weekend: (optional) 1 or 0, filter the event is in weekend or not.
 + /predict_temporal: POST to predict in temporal with previous and next event, with following parameters:
   + query: the current event query
   + semantic_name: the filter by semantic name
   + previous_event: the query for previous event
   + next_event: the query for next event
   + time_gap: the time gap in hour
-+ /predict_ntcir: POST predict for the ntcir 17, with following parameters:
-  + query: the full text query to search
-  + semantic_name: the semantic name for filtering
-  + start_hour: (optional) 0-> 23 for filtering start hour of event
-  + end_hour: (optional) 0-> 23 for filtering end hour of event
-  + is_weekend: (optional) 1 or 0, filter the event is in weekend or not.
 + /relevance_feedback: POST retrieve images by positive relevant feedback
   + query: the full-text query
   + image_id: the list of relevant images

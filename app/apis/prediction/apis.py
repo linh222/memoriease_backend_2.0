@@ -1,23 +1,20 @@
-import time
+from io import StringIO
 
+import boto3
 import pandas as pd
 import torch
 from elasticsearch import Elasticsearch
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import APIKey
-import boto3
-from io import StringIO
 
 from LAVIS.lavis.models import load_model_and_preprocess
 from app.api_key import get_api_key
-from app.apis.api_utils import add_image_link, RequestTimestampMiddleware, metadata_logging2file
-from app.config import HOST, root_path, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET
+from app.apis.api_utils import add_image_link, RequestTimestampMiddleware
+from app.config import HOST, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET
 from app.predictions.predict import retrieve_image
-from app.predictions.relevance_feedback import relevance_image_similar, calculate_mean_emb, pseudo_relevance_feedback
 from app.predictions.temporal_predict import temporal_search
 from app.predictions.utils import automatic_logging
 from .schemas import (
-    FeatureModelRelevanceSearch,
     FeatureModelSingleSearch,
     FeatureModelTemporalSearch,
 )
@@ -37,13 +34,13 @@ def initialize_resources():
     )
     s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
 
-
     print('Loading model successfully at')
     print("cuda" if torch.cuda.is_available() else "cpu")
 
     response = s3.get_object(Bucket=BUCKET, Key='event_segmentation_appoarch2_0_75.csv')
     csv_data = response['Body'].read().decode('utf-8')
     df_main_event = pd.read_csv(StringIO(csv_data))
+
 
 # @router.post(
 #     "/predict",
@@ -109,41 +106,6 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
     # automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
 
     return results
-
-
-@router.post(
-    "/relevance_feedback",
-    status_code=status.HTTP_200_OK,
-)
-async def relevance_feedback(feature: FeatureModelRelevanceSearch):
-    query = feature.query
-    image_id = feature.image_id
-    semantic_name = feature.semantic_name
-    mean_embedding = calculate_mean_emb(image_id=image_id)
-    raw_result = relevance_image_similar(image_embedding=mean_embedding, query=query, semantic_name=semantic_name)
-    results = [{'current_event': result} for result in raw_result['hits']['hits']]
-    results = add_image_link(results)
-    return results
-
-
-# @router.post(
-#     "/predict_pseudo_relevance_feedback",
-#     status_code=status.HTTP_200_OK,
-# )
-# async def predict_image_peuso_rf(feature: FeatureModelSingleNTCIRSearch, api_key: APIKey = Depends(get_api_key)):
-#     query = feature.query
-#     semantic_name = feature.semantic_name
-#
-#     raw_result = pseudo_relevance_feedback(concept_query=query, embed_model=model, txt_processor=txt_processor,
-#                                            semantic_name=semantic_name, start_hour=feature.start_hour,
-#                                            end_hour=feature.end_hour, is_weekend=feature.is_weekend, top_k=10)
-#     results = [{'current_event': result} for result in raw_result['hits']['hits']]
-#     results = add_image_link(results)
-#
-#     # Automatic run Logging query string
-#     automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
-#
-#     return results
 
 
 def include_router(app):
