@@ -20,7 +20,6 @@ from .schemas import (
     FeatureModelRelevanceSearch,
     FeatureModelSingleSearch,
     FeatureModelTemporalSearch,
-    FeatureModelSingleNTCIRSearch,
 )
 
 router = APIRouter()
@@ -42,33 +41,32 @@ def initialize_resources():
     print('Loading model successfully at')
     print("cuda" if torch.cuda.is_available() else "cpu")
 
-    # df_main_event = pd.read_csv('{}/app/models/event_segmentation_appoarch2_0_75.csv'.format(root_path))
     response = s3.get_object(Bucket=BUCKET, Key='event_segmentation_appoarch2_0_75.csv')
     csv_data = response['Body'].read().decode('utf-8')
     df_main_event = pd.read_csv(StringIO(csv_data))
 
-@router.post(
-    "/predict",
-    status_code=status.HTTP_200_OK,
-)
-async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Depends(get_api_key)):
-    query = feature.query
-    topic = feature.topic
-
-    # Logging query submit
-    metadata_logging2file(query, topic)
-
-    raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor)
-    results = [{'current_event': result} for result in raw_result['hits']['hits']]
-    results = add_image_link(results)
-
-    # Logging list_receive
-    response = [i['current_event']['_source']['ImageID'] for i in results]
-    timestamp = int(time.time())
-    with open("{}/app/evaluation_model/metadata_log.txt".format(root_path), "a") as file:
-        file.write("\n" + "{},{},{},{}".format(timestamp, topic, 'list_received', response))
-
-    return results
+# @router.post(
+#     "/predict",
+#     status_code=status.HTTP_200_OK,
+# )
+# async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Depends(get_api_key)):
+#     query = feature.query
+#     topic = feature.topic
+#
+#     # Logging query submit
+#     metadata_logging2file(query, topic)
+#
+#     raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor)
+#     results = [{'current_event': result} for result in raw_result['hits']['hits']]
+#     results = add_image_link(results)
+#
+#     # Logging list_receive
+#     response = [i['current_event']['_source']['ImageID'] for i in results]
+#     timestamp = int(time.time())
+#     with open("{}/app/evaluation_model/metadata_log.txt".format(root_path), "a") as file:
+#         file.write("\n" + "{},{},{},{}".format(timestamp, topic, 'list_received', response))
+#
+#     return results
 
 
 @router.post(
@@ -90,21 +88,25 @@ async def predict_image_temporal(feature: FeatureModelTemporalSearch, api_key: A
 
 
 @router.post(
-    "/predict_ntcir",
+    "/predict",
     status_code=status.HTTP_200_OK,
 )
-async def predict_image(feature: FeatureModelSingleNTCIRSearch, api_key: APIKey = Depends(get_api_key)):
+async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Depends(get_api_key)):
     query = feature.query
+    topic = feature.topic
     semantic_name = feature.semantic_name
+    start_hour = feature.start_hour
+    end_hour = feature.end_hour
+    is_weekend = feature.is_weekend
 
     raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor,
-                                semantic_name=semantic_name, start_hour=feature.start_hour,
-                                end_hour=feature.end_hour, is_weekend=feature.is_weekend)
+                                semantic_name=semantic_name, start_hour=start_hour,
+                                end_hour=end_hour, is_weekend=is_weekend)
     results = [{'current_event': result} for result in raw_result['hits']['hits']]
     results = add_image_link(results)
 
     # Automatic run Logging query string
-    automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
+    # automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
 
     return results
 
@@ -124,24 +126,24 @@ async def relevance_feedback(feature: FeatureModelRelevanceSearch):
     return results
 
 
-@router.post(
-    "/predict_pseudo_relevance_feedback",
-    status_code=status.HTTP_200_OK,
-)
-async def predict_image_peuso_rf(feature: FeatureModelSingleNTCIRSearch, api_key: APIKey = Depends(get_api_key)):
-    query = feature.query
-    semantic_name = feature.semantic_name
-
-    raw_result = pseudo_relevance_feedback(concept_query=query, embed_model=model, txt_processor=txt_processor,
-                                           semantic_name=semantic_name, start_hour=feature.start_hour,
-                                           end_hour=feature.end_hour, is_weekend=feature.is_weekend, top_k=10)
-    results = [{'current_event': result} for result in raw_result['hits']['hits']]
-    results = add_image_link(results)
-
-    # Automatic run Logging query string
-    automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
-
-    return results
+# @router.post(
+#     "/predict_pseudo_relevance_feedback",
+#     status_code=status.HTTP_200_OK,
+# )
+# async def predict_image_peuso_rf(feature: FeatureModelSingleNTCIRSearch, api_key: APIKey = Depends(get_api_key)):
+#     query = feature.query
+#     semantic_name = feature.semantic_name
+#
+#     raw_result = pseudo_relevance_feedback(concept_query=query, embed_model=model, txt_processor=txt_processor,
+#                                            semantic_name=semantic_name, start_hour=feature.start_hour,
+#                                            end_hour=feature.end_hour, is_weekend=feature.is_weekend, top_k=10)
+#     results = [{'current_event': result} for result in raw_result['hits']['hits']]
+#     results = add_image_link(results)
+#
+#     # Automatic run Logging query string
+#     automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
+#
+#     return results
 
 
 def include_router(app):

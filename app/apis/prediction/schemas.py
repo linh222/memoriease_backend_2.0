@@ -5,16 +5,6 @@ from typing import Optional, List
 class FeatureModelSingleSearch(BaseModel):
     query: str = Field(..., description="concept query that user input")
     topic: Optional[str] = Field(..., description='topic id')
-
-    class Config:
-        orm_mode = True
-
-    def __str__(self):
-        return f"{self.query},"
-
-
-class FeatureModelSingleNTCIRSearch(BaseModel):
-    query: str = Field(..., description="concept query that user input")
     semantic_name: Optional[str] = Field(..., description='location')
     start_hour: Optional[int] = Field(..., description='start hour')
     end_hour: Optional[int] = Field(..., description='end hour')
@@ -24,7 +14,21 @@ class FeatureModelSingleNTCIRSearch(BaseModel):
         orm_mode = True
 
     def __str__(self):
-        return f"{self.query}, {self.semantic_name}, {self.start_hour}, {self.end_hour}, {self.is_weekend}"
+        return f"{self.query}, {self.topic}, {self.semantic_name}, {self.start_hour}, {self.end_hour}, {self.is_weekend}"
+
+
+# class FeatureModelSingleNTCIRSearch(BaseModel):
+#     query: str = Field(..., description="concept query that user input")
+#     semantic_name: Optional[str] = Field(..., description='location')
+#     start_hour: Optional[int] = Field(..., description='start hour')
+#     end_hour: Optional[int] = Field(..., description='end hour')
+#     is_weekend: Optional[int] = Field(..., description='is on weekend or not')
+#
+#     class Config:
+#         orm_mode = True
+#
+#     def __str__(self):
+#         return f"{self.query}, {self.semantic_name}, {self.start_hour}, {self.end_hour}, {self.is_weekend}"
 
 
 class FeatureModelTemporalSearch(BaseModel):
