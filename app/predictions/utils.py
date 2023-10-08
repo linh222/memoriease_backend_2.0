@@ -8,14 +8,13 @@ from app.predictions.mysceal_nlp_utils.pos_tag import Tagger
 
 def time_contructor(date):
     start_time1, end_time1 = '', ''
-    if '2019' in date:
-        date = date.replace('2019', '')
-        year = '2019'
-    elif '2020' in date:
-        date = date.replace('2020', '')
-        year = '2020'
-    else:
-        year = ''
+    years = ['2015', '2016', '2018', '2019', '2020']
+    year = ''
+    for y in years:
+        if y in date:
+            date = date.replace(y, '')
+            year = y
+            break
 
     list_month = {'january': '01', 'february': '02', 'march': '03', 'april': '04', 'may': '05',
                   'june': '06', 'july': '07', 'august': '08', 'september': '09', 'october': '10',
@@ -33,7 +32,7 @@ def time_contructor(date):
     month_31 = ['january', 'march', 'may', 'july', 'august', 'october', 'december']
     month_30 = ['april', 'june', 'september', 'november']
     if year == "" and month == '' and day == '':
-        start_time = '2019-01-01'
+        start_time = '2015-01-01'
         end_time = '2020-06-30'
     elif month == '' and year != '':
         start_time = year + '-01-01'

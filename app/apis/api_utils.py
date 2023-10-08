@@ -1,15 +1,16 @@
 import logging
 import time
+from io import StringIO
 
+import boto3
 import pandas as pd
 from fastapi import Request
 
 from app.config import IMAGE_SERVER, root_path, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET
 from app.predictions.utils import process_query
-import boto3
-from io import StringIO
+
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
-response = s3.get_object(Bucket=BUCKET, Key='event_segmentation.csv')
+response = s3.get_object(Bucket=BUCKET, Key='event_segmentation_lsc20_lsc23.csv')
 csv_data = response['Body'].read().decode('utf-8')
 df_event = pd.read_csv(StringIO(csv_data), dtype={"path": 'str', 'event_id': 'int64'})
 
@@ -18,9 +19,7 @@ def add_image_link(results):
     if len(results) >= 1:
         for result in results:
             image_id = result['current_event']['_source']['ImageID']
-            year_month = image_id[:6]
-            day = image_id[6:8]
-            image_name = image_id[0:-4]
+            image_name, year_month, day = extract_date_imagename(image_id)
             result['current_event']['_source'][
                 'image_link'] = IMAGE_SERVER + '/{}/{}/{}.webp'.format(year_month, day,
                                                                        image_name)
@@ -32,12 +31,23 @@ def add_image_link(results):
                 for img in range(sim_image.shape[0]):
                     image_id = sim_image[img]
                     if image_id != image_name:
-                        year_month = image_id[:6]
-                        day = image_id[6:8]
+                        image_name, year_month, day = extract_date_imagename(image_id)
                         list_similar_image.append(
-                            '{}/{}/{}/{}.webp'.format(IMAGE_SERVER, year_month, day, image_id))
+                            '{}/{}/{}/{}.webp'.format(IMAGE_SERVER, year_month, day, image_name))
             result['current_event']['_source']['similar_images'] = list_similar_image
     return results
+
+
+def extract_date_imagename(image_id):
+    if image_id.find('/') == -1:
+        year_month = image_id[:6]
+        day = image_id[6:8]
+        image_name = image_id
+    else:
+        date, image_name = image_id.split('/')
+        year_month = "".join(date.split("-")[:2])
+        day = date.split("-")[-1]
+    return image_name, year_month, day
 
 
 def logger_init():

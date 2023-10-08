@@ -24,7 +24,7 @@ router = APIRouter()
 
 # Function to initialize resources
 def initialize_resources():
-    global es, model, vis_processors, txt_processor, df_main_event, logger
+    global es, model, vis_processors, txt_processor, logger
 
     es = Elasticsearch(hosts=[HOST], timeout=100)
 
@@ -37,9 +37,6 @@ def initialize_resources():
     print('Loading model successfully at')
     print("cuda" if torch.cuda.is_available() else "cpu")
 
-    response = s3.get_object(Bucket=BUCKET, Key='event_segmentation_appoarch2_0_75.csv')
-    csv_data = response['Body'].read().decode('utf-8')
-    df_main_event = pd.read_csv(StringIO(csv_data))
 
 
 # @router.post(
