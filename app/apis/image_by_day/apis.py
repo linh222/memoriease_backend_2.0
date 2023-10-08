@@ -9,6 +9,7 @@ import boto3
 from io import StringIO
 router = APIRouter()
 
+# TODO: add visualize for lsc20
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
 response = s3.get_object(Bucket=BUCKET, Key='image_by_event_for_visualization1.csv')
 csv_data = response['Body'].read().decode('utf-8')

@@ -7,6 +7,7 @@ from app.config import HOST, INDICES, IMAGE_SERVER
 from app.predictions.blip_extractor import extract_query_blip_embedding
 from app.predictions.predict import retrieve_image
 from app.predictions.utils import process_query, build_query_template, construct_filter
+from app.apis.api_utils import extract_date_imagename
 
 
 def time_processing_event(list_event_query, main_event, time_gap, time_period, location, keyword, weekday, embed,
@@ -58,9 +59,10 @@ def send_request_by_event(new_result, event_query, type):
         if len(result['responses'][index]['hits']['hits']) == 1:
             image_id_result = result['responses'][index]['hits']['hits'][0]
             image_id = image_id_result['_source']['ImageID']
-            year_month = image_id[:6]
-            day = image_id[6:8]
-            image_name = image_id[0:-4]
+            image_name, year_month, day = extract_date_imagename(image_id)
+            # year_month = image_id[:6]
+            # day = image_id[6:8]
+            # image_name = image_id[0:-4]
             result['responses'][index]['hits']['hits'][0]['_source'][
                 'image_link'] = '{}/{}/{}/{}.webp'.format(IMAGE_SERVER,
                                                           year_month, day, image_name)
