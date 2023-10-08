@@ -60,9 +60,6 @@ def send_request_by_event(new_result, event_query, type):
             image_id_result = result['responses'][index]['hits']['hits'][0]
             image_id = image_id_result['_source']['ImageID']
             image_name, year_month, day = extract_date_imagename(image_id)
-            # year_month = image_id[:6]
-            # day = image_id[6:8]
-            # image_name = image_id[0:-4]
             result['responses'][index]['hits']['hits'][0]['_source'][
                 'image_link'] = '{}/{}/{}/{}.webp'.format(IMAGE_SERVER,
                                                           year_month, day, image_name)
