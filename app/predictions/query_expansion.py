@@ -5,7 +5,7 @@ import openai
 import torch
 from dotenv import load_dotenv
 
-from LAVIS.lavis.models import load_model_and_preprocess
+from LAVIS1.lavis.models import load_model_and_preprocess
 from app.config import root_path
 from app.predictions.predict import retrieve_image
 
