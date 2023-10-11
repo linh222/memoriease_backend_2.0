@@ -31,7 +31,7 @@ def initialize_resources():
         name="blip2_feature_extractor", model_type="coco", is_eval=True, device=device
     )
     instruct_model, instruct_vis_processor, instruct_txt_processor = load_model_and_preprocess(
-        name="blip2_vicuna_instruct", model_type="vicuna7b", is_eval=True, device=device
+        name="blip2_t5_instruct", model_type="flant5xl", is_eval=True, device=device
     )
 
     print('Loading 2 models successfully at')
