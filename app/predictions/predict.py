@@ -15,6 +15,7 @@ def retrieve_image(
         start_hour="",
         end_hour="",
         is_weekend="",
+        size=100
 ):
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(concept_query)
 
@@ -34,7 +35,7 @@ def retrieve_image(
 
     filter, must = construct_filter(query_dict)
 
-    query_template = build_query_template(filter, must, text_embedding, size=100)
+    query_template = build_query_template(filter, must, text_embedding, size=size)
     query_template = json.dumps(query_template)
     url = f"{HOST}/{INDICES}/_search"
 
@@ -50,7 +51,9 @@ def retrieve_image(
 # if __name__ == "__main__":
 #     # Remote server
 #     import time
-#
+#     import torch
+#     from LAVIS.lavis.models import load_model_and_preprocess
+#     from app.config import root_path
 #     start_time = time.time()
 #     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
 #     model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
@@ -58,8 +61,8 @@ def retrieve_image(
 #                                                                       device=device)
 #     print("cuda" if torch.cuda.is_available() else "cpu")
 #     print(time.time() - start_time, 'seconds')
-#
-#     result = retrieve_image(concept_query="""Exotic birds. Find examples of multicoloured parrots (real or fake) in a
-#     tree at our rented house in Thailand.""", embed_model=model, txt_processor=txt_processors)
+#     result = retrieve_image(concept_query="""I go homewares shopping  in Ireland in 2019""",
+#                             embed_model=model, txt_processor=txt_processors, semantic_name="", start_hour=20,
+#                             end_hour=24, is_weekend=0, size=100)
 #     with open('{}/app/evaluation_model/result.json'.format(root_path), 'w') as f:
-#         json.dump(result['hits']['hits'], f)
+#         json.dump(result, f)
