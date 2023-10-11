@@ -22,7 +22,7 @@ class Blip2VicunaInstruct(Blip2Base):
         - vicuna7b
         - vicuna13b
     Usage:
-        >>> from lavis.models import load_model
+        >>> from LAVIS.lavis.models import load_model
         >>> model = load_model("blip2_vicuna_instruct", "vicuna7b")
     """
 
@@ -51,7 +51,7 @@ class Blip2VicunaInstruct(Blip2Base):
         transformers_version = version.parse(transformers.__version__)
         assert transformers_version >= version.parse("4.28"), "BLIP-2 Vicuna requires transformers>=4.28"        
         from transformers import LlamaTokenizer
-        from lavis.models.blip2_models.modeling_llama import LlamaForCausalLM
+        from LAVIS.lavis.models.blip2_models.modeling_llama import LlamaForCausalLM
         
         self.tokenizer = self.init_tokenizer(truncation_side="left")
 
