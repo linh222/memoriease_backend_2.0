@@ -17,6 +17,10 @@ from LAVIS.lavis.processors.blip_processors import (
     BlipImageEvalProcessor,
     BlipCaptionProcessor,
 )
+from LAVIS.lavis.processors.blip_diffusion_processors import (
+    BlipDiffusionInputImageProcessor,
+    BlipDiffusionTargetImageProcessor,
+)
 from LAVIS.lavis.processors.gpt_processors import (
     GPTVideoFeatureProcessor,
     GPTDialogueProcessor,
@@ -35,6 +39,10 @@ __all__ = [
     "Blip2ImageTrainProcessor",
     "BlipImageEvalProcessor",
     "BlipCaptionProcessor",
+    # BLIP-Diffusion
+    "BlipDiffusionInputImageProcessor",
+    "BlipDiffusionTargetImageProcessor",
+    # CLIP
     "ClipImageTrainProcessor",
     # GPT
     "GPTVideoFeatureProcessor",

@@ -16,6 +16,7 @@ from LAVIS.lavis.tasks.retrieval import RetrievalTask
 from LAVIS.lavis.tasks.vqa import VQATask, GQATask, AOKVQATask
 from LAVIS.lavis.tasks.vqa_reading_comprehension import VQARCTask, GQARCTask
 from LAVIS.lavis.tasks.dialogue import DialogueTask
+from LAVIS.lavis.tasks.text_to_image_generation import TextToImageGenerationTask
 
 
 def setup_task(cfg):
@@ -42,4 +43,5 @@ __all__ = [
     # "VisualEntailmentTask",
     "ImageTextPretrainTask",
     "DialogueTask",
+    "TextToImageGenerationTask",
 ]

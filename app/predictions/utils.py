@@ -301,7 +301,7 @@ def build_query_template(filter, must, text_embedding, size=100):
 
 def automatic_logging(results: list, output_file_name: str):
     logging_data = []
-    with open(f'/Users/linhtran/PycharmProject/fastApiProject_blip2/app/evaluation_model/{output_file_name}.csv',
+    with open(f'{root_path}/app/evaluation_model/{output_file_name}.csv',
               'r') as file:
         headline = file.readline()
         exist_data = len(file.readlines())
@@ -312,7 +312,7 @@ def automatic_logging(results: list, output_file_name: str):
         text = f'DCU,MEMORIEASE_SAT01,{logging_count},{image_id},0,1'
         logging_data.append(text)
 
-    with open(f'/Users/linhtran/PycharmProject/fastApiProject_blip2/app/evaluation_model/{output_file_name}.csv',
+    with open(f'{root_path}/app/evaluation_model/{output_file_name}.csv',
               'a') as file:
         if 'GROUP-ID,RUN-ID,TOPIC-ID,IMAGE-ID,SECONDS-ELAPSED,SCORE' not in headline:
             file.write('GROUP-ID,RUN-ID,TOPIC-ID,IMAGE-ID,SECONDS-ELAPSED,SCORE\n')

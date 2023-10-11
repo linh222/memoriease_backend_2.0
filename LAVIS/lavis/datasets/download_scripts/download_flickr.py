@@ -10,7 +10,7 @@ from pathlib import Path
 
 from omegaconf import OmegaConf
 
-from LAVIS.lavis.common.utils import (
+from lavis.common.utils import (
     cleanup_dir,
     get_abs_path,
     get_cache_path,

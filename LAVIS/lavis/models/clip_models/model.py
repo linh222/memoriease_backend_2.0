@@ -500,7 +500,7 @@ class CLIP(BaseModel):
     @property
     def loss(self):
         if self._loss is None:
-            from lavis.models.clip_models.loss import ClipLoss
+            from LAVIS.lavis.models.clip_models.loss import ClipLoss
             from torch import distributed as dist
 
             self._loss = ClipLoss(
@@ -699,7 +699,7 @@ class CLIP(BaseModel):
         ), f"categories must be a list, got {type(categories)}."
         assert os.path.exists(image_path), f"File {image_path} does not exist."
 
-        from lavis.processors.clip_processors import ClipImageEvalProcessor
+        from LAVIS.lavis.processors.clip_processors import ClipImageEvalProcessor
         from PIL import Image
 
         image_preprocess = ClipImageEvalProcessor()

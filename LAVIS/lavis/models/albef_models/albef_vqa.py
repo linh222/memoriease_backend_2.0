@@ -31,7 +31,7 @@ class AlbefVQA(AlbefBase, MomentumDistilationMixin):
         - vqav2: fine-tuned ALBEF base model on VQA v2.0 dataset.
 
     Usage:
-        >>> from lavis.models import load_model
+        >>> from LAVIS.lavis.models import load_model
         >>> model = load_model("albef_vqa", "vqav2")
     """
 
@@ -98,7 +98,7 @@ class AlbefVQA(AlbefBase, MomentumDistilationMixin):
 
         Examples:
             >>> import torch
-            >>> from lavis.models import load_model
+            >>> from LAVIS.lavis.models import load_model
             >>> model = load_model("albef_vqa")
             >>> samples = {
             ...     "image": torch.rand(2, 3, 384, 384),
@@ -240,7 +240,7 @@ class AlbefVQA(AlbefBase, MomentumDistilationMixin):
 
         Examples:
             >>> from PIL import Image
-            >>> from lavis.models import load_model_and_preprocess
+            >>> from LAVIS.lavis.models import load_model_and_preprocess
             >>> model, vis_processors, txt_processors = load_model_and_preprocess("albef_vqa", "vqav2")
             >>> raw_image = Image.open("docs/data/merlion.png").convert("RGB")
             >>> question = "Which city is this photo taken?"

@@ -31,7 +31,7 @@ class BlipNLVR(BlipBase, MomentumDistilationMixin):
         - nlvr: finetuned model on NLVR2 dataset.
 
     Usage:
-        >>> from lavis.models import load_model
+        >>> from LAVIS.lavis.models import load_model
         >>> model = load_model("blip_nlvr", "nlvr")
     """
 
@@ -69,7 +69,7 @@ class BlipNLVR(BlipBase, MomentumDistilationMixin):
 
         Examples:
             >>> import torch
-            >>> from lavis.models import load_model
+            >>> from LAVIS.lavis.models import load_model
             >>> model = load_model("blip_nlvr", "nlvr")
             >>> samples = {
             ...     "image0": torch.randn(2, 3, 384, 384),

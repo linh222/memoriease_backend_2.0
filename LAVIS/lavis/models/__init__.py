@@ -37,6 +37,11 @@ from LAVIS.lavis.models.blip2_models.blip2_t5 import Blip2T5
 from LAVIS.lavis.models.blip2_models.blip2_qformer import Blip2Qformer
 from LAVIS.lavis.models.blip2_models.blip2_image_text_matching import Blip2ITM
 
+from LAVIS.lavis.models.blip2_models.blip2_t5_instruct import Blip2T5Instruct
+from LAVIS.lavis.models.blip2_models.blip2_vicuna_instruct import Blip2VicunaInstruct
+
+from LAVIS.lavis.models.blip_diffusion_models.blip_diffusion import BlipDiffusion
+
 from LAVIS.lavis.models.pnp_vqa_models.pnp_vqa import PNPVQA
 from LAVIS.lavis.models.pnp_vqa_models.pnp_unifiedqav2_fid import PNPUnifiedQAv2FiD
 from LAVIS.lavis.models.img2prompt_models.img2prompt_vqa import Img2PromptVQA
@@ -64,6 +69,7 @@ __all__ = [
     "BlipFeatureExtractor",
     "BlipCaption",
     "BlipClassification",
+    "BlipDiffusion",
     "BlipITM",
     "BlipNLVR",
     "BlipPretrain",
@@ -74,6 +80,8 @@ __all__ = [
     "Blip2ITM",
     "Blip2OPT",
     "Blip2T5",
+    "Blip2T5Instruct",
+    "Blip2VicunaInstruct",
     "PNPVQA",
     "Img2PromptVQA",
     "PNPUnifiedQAv2FiD",

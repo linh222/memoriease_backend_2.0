@@ -28,7 +28,7 @@ class BlipVQA(BlipBase):
         - vqav2: fine-tuned BLIP base model on VQA v2.0 dataset.
 
     Usage:
-        >>> from lavis.models import load_model
+        >>> from LAVIS.lavis.models import load_model
         >>> model = load_model("blip_vqa", "vqav2")
         >>> model = load_model("blip_vqa", "okvqa")
         >>> model = load_model("blip_vqa", "aokvqa")
@@ -70,7 +70,7 @@ class BlipVQA(BlipBase):
         Examples:
         ```python
             >>> import torch
-            >>> from lavis.models import load_model
+            >>> from LAVIS.lavis.models import load_model
             >>> model = load_model("blip_vqa")
             >>> samples = {
             ...     "image": torch.rand(2, 3, 480, 480),
@@ -191,7 +191,7 @@ class BlipVQA(BlipBase):
         Examples:
         ```python
             >>> from PIL import Image
-            >>> from lavis.models import load_model_and_preprocess
+            >>> from LAVIS.lavis.models import load_model_and_preprocess
             >>> model, vis_processors, txt_processors = load_model_and_preprocess("blip_vqa", "vqav2")
             >>> raw_image = Image.open("docs/data/merlion.png").convert("RGB")
             >>> question = "Which city is this photo taken?"

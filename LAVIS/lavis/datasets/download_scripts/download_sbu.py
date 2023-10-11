@@ -13,8 +13,8 @@ import tqdm
 
 from concurrent.futures import ThreadPoolExecutor
 
-from LAVIS.lavis.common.utils import get_abs_path, get_cache_path
-from LAVIS.lavis.datasets.builders import load_dataset
+from lavis.common.utils import get_abs_path, get_cache_path
+from lavis.datasets.builders import load_dataset
 from omegaconf import OmegaConf
 from PIL import Image
 

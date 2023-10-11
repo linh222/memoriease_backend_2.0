@@ -31,7 +31,7 @@ class PNPVQA(BaseModel):
         - 3b: BLIPITM, BLIPCaption, PNPUnifiedQAv2FiD (t5-3b)
 
     Usage:
-        >>> from lavis.models import load_model
+        >>> from LAVIS.lavis.models import load_model
         >>> model = load_model("pnp_vqa", "base", is_eval=True)
         >>> model = load_model("pnp_vqa", "large", is_eval=True)
         >>> model = load_model("pnp_vqa", "3b", is_eval=True)

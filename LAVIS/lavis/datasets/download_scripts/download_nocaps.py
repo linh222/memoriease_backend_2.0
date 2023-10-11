@@ -14,7 +14,7 @@ from multiprocessing import Pool
 import numpy as np
 import requests
 import tqdm
-from LAVIS.lavis.common.utils import cleanup_dir, get_abs_path, get_cache_path
+from lavis.common.utils import cleanup_dir, get_abs_path, get_cache_path
 from omegaconf import OmegaConf
 
 header_mzl = {

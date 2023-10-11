@@ -67,7 +67,7 @@ class AlbefFeatureExtractor(AlbefBase):
         Examples:
         ```python
             >>> from PIL import Image
-            >>> from LAVIS.lavis.models import load_model_and_preprocess
+            >>> from lavis.models import load_model_and_preprocess
             >>> raw_image = Image.open("docs/data/merlion.png").convert("RGB")
             >>> caption = "a large fountain spewing water into the air"
             >>> model, vis_processors, txt_processors = load_model_and_preprocess("albef_feature_extractor", is_eval=True)

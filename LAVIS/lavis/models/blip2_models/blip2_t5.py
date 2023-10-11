@@ -26,7 +26,7 @@ class Blip2T5(Blip2Base):
         - pretrain_flant5xxl: pretrained model with FlanT5-XXL
         - caption_coco_flant5xl: fintuned image captioning model with FlanT5-XL
     Usage:
-        >>> from LAVIS.lavis.models import load_model
+        >>> from lavis.models import load_model
         >>> model = load_model("blip2_t5", "pretrain_flant5xl")
     """
 

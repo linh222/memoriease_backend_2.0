@@ -24,23 +24,22 @@ def question_classification(question: str):
     return -1
 
 
-def process_result(query, embed_model, txt_processor):
-    # retrieved_results = retrieve_image(concept_query=query, embed_model=embed_model, txt_processor=txt_processor,
-    #                                    semantic_name="", start_hour="", end_hour="", is_weekend="", size=10)
-    retrieved_results = json.load(open('/Users/linhtran/PycharmProject/fastApiProject_blip2/app/evaluation_model/result.json'))
+def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2_embed_model, blip2_txt_processor,
+                   instruct_model, instruct_vis_processor, device):
+    retrieved_results = retrieve_image(concept_query=query, embed_model=blip2_embed_model,
+                                       txt_processor=blip2_txt_processor, semantic_name=semantic_name,
+                                       start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=10)
     question_type = question_classification(query)
 
     if question_type == 0:
         # Process the visual related question. Assume that the blip2/instructblip is already load
-        model = 1
-        vis_processor = 1
         answer_list = []
         for result in retrieved_results['hits']['hits']:
             image_id = result['ImageID']
             image_path = add_image_link(image_id)
             raw_image = Image.open(BytesIO(requests.get(image_path).content))
-            image = raw_image # image = vis_processors["eval"](raw_image).unsqueeze(0).to(device)
-            answer = model.generate({"image": image,
+            image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
+            answer = instruct_model.generate({"image": image,
                                      "prompt": f"Based on the provided images, answer this question {query}. Answer: "})
             answer_list.append(answer)
         return answer_list
@@ -91,16 +90,16 @@ if __name__ == "__main__":
     question14 = "How many time did I have dinner at a restaurant in 2019"
 
 
-    import torch
-    from LAVIS.lavis.models import load_model_and_preprocess
-
-    device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
-    model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
-                                                                      model_type="coco", is_eval=True,
-                                                                      device=device)
-    print("cuda" if torch.cuda.is_available() else "cpu")
-    answer = process_result(question6, embed_model=model, txt_processor=txt_processors)
-    print(answer)
+    # import torch
+    # from LAVIS.lavis.models import load_model_and_preprocess
+    #
+    # device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
+    # model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
+    #                                                                   model_type="coco", is_eval=True,
+    #                                                                   device=device)
+    # print("cuda" if torch.cuda.is_available() else "cpu")
+    # answer = process_result(question6, embed_model=model, txt_processor=txt_processors)
+    # print(answer)
 
     # print(f"Question 1: {question_classification(question1)}")
     # print(f"Question 2: {question_classification(question2)}")

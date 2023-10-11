@@ -38,7 +38,7 @@ class BlipRetrieval(BlipBase, MomentumDistilationMixin, SharedQueueMixin):
         - flickr: fine-tuned BLIP base model on Flickr30k dataset.
 
     Usage:
-        >>> from lavis.models import load_model
+        >>> from LAVIS.lavis.models import load_model
         >>> model = load_model("blip_retrieval", "coco")
         >>> model = load_model("blip_retrieval", "flickr")
     """
@@ -129,7 +129,7 @@ class BlipRetrieval(BlipBase, MomentumDistilationMixin, SharedQueueMixin):
 
         Examples:
             >>> import torch
-            >>> from lavis.models import load_model
+            >>> from LAVIS.lavis.models import load_model
             >>> model = load_model("blip_retrieval", "coco")
             >>> images = torch.randn(4, 3, 384, 384)
             >>> text_input = ["caption of image 1", "another caption of image 1", "caption of image 2", "caption of image 3"]

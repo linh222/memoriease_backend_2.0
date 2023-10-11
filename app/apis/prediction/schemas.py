@@ -46,3 +46,17 @@ class FeatureModelTemporalSearch(BaseModel):
                f"{self.previous_event}, {self.next_event}, " \
                f"{self.time_gap}, {self.semantic_name}"
 
+
+class FeatureModelQuestionAnswering(BaseModel):
+    query: str = Field(..., description="concept query that user input")
+    topic: Optional[str] = Field(..., description='topic id')
+    semantic_name: Optional[str] = Field(..., description='location')
+    start_hour: Optional[int] = Field(..., description='start hour')
+    end_hour: Optional[int] = Field(..., description='end hour')
+    is_weekend: Optional[int] = Field(..., description='is on weekend or not')
+
+    class Config:
+        orm_mode = True
+
+    def __str__(self):
+        return f"{self.query}, {self.topic}, {self.semantic_name}, {self.start_hour}, {self.end_hour}, {self.is_weekend}"
