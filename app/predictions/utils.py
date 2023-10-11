@@ -97,6 +97,7 @@ valid_time_period = {'early morning': 'early morning', 'dawn': 'early morning', 
 
 valid_location = pickle.load(open('{}/app/predictions/mysceal_nlp_utils/common/city.pkl'.format(root_path), 'rb'))
 valid_location = ' '.join(valid_location).split(' ')
+valid_location = list(set(valid_location))
 
 
 def process_query(sent):
@@ -280,7 +281,7 @@ def construct_filter(query_dict):
 
 
 def build_query_template(filter, must, text_embedding, size=100):
-    col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id', 'similar_image', 'event', 'group']
+    col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id', 'similar_image', 'city', 'event', 'group']
     query_template = {
 
         "knn": {
