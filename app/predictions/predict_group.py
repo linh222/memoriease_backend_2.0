@@ -6,7 +6,7 @@ from app.config import HOST, INDICES, GROUP_INDICES, root_path
 from app.predictions.blip_extractor import extract_query_blip_embedding
 from app.predictions.utils import process_query, construct_filter, build_query_template
 import torch
-from LAVIS1.lavis.models import load_model_and_preprocess
+from LAVIS.lavis.models import load_model_and_preprocess
 
 def retrieve_image(
         concept_query: str,

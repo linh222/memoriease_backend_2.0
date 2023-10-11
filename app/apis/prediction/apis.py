@@ -7,7 +7,7 @@ from elasticsearch import Elasticsearch
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import APIKey
 
-from LAVIS1.lavis.models import load_model_and_preprocess
+from LAVIS.lavis.models import load_model_and_preprocess
 from app.api_key import get_api_key
 from app.apis.api_utils import add_image_link, RequestTimestampMiddleware
 from app.config import HOST, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET

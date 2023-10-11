@@ -52,7 +52,7 @@ def retrieve_image(
 #     # Remote server
 #     import time
 #     import torch
-#     from LAVIS1.lavis.models import load_model_and_preprocess
+#     from LAVIS.lavis.models import load_model_and_preprocess
 #     from app.config import root_path
 #     start_time = time.time()
 #     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"

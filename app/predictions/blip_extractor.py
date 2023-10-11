@@ -9,7 +9,7 @@ def extract_query_blip_embedding(query, model, processor):
 
 
 if __name__ == "__main__":
-    from LAVIS1.lavis.models import load_model_and_preprocess
+    from LAVIS.lavis.models import load_model_and_preprocess
 
     query = 'I am at school'
     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
