@@ -34,8 +34,10 @@ class Settings(BaseSettings):
     APP_NAME: str = "Image Retrieval API"
     API_MODEL_VERSION = '1.0'
     MODEL_PATH = '{}/app/models/model_base_retrieval_coco.pth'.format(root_path)
-    image_directory = '/Volumes/Crucial X6/LSC23'
-    embed_directory = '/Volumes/Crucial X6/blip2_embedding/blip2_embedding_full'
+    # image_directory = '/Volumes/Crucial X6/LSC23'
+    # embed_directory = '/Volumes/Crucial X6/blip2_embedding/blip2_embedding_full'
+    image_directory = '/home/ltran/spinning-storage/ltran/LSC23_webp'
+    embed_directory = '/home/ltran/spinning-storage/ltran/blip2_embedding'
 
 
 settings = Settings()
