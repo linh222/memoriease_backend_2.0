@@ -1,12 +1,10 @@
-from app.predictions.utils import process_query
-from app.config import root_path
-from app.predictions.predict import retrieve_image
-import json
-from PIL import Image
-from app.apis.api_utils import add_image_link
-import requests
-from io import BytesIO
 import openai
+from PIL import Image
+
+from app.apis.api_utils import extract_date_imagename
+from app.config import settings
+from app.predictions.predict import retrieve_image
+
 
 def question_classification(question: str):
     # type = 0 -> visual question, type = 1 -> metadata question, type = -1: unknown
@@ -33,16 +31,18 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
 
     if question_type == 0:
         # Process the visual related question. Assume that the blip2/instructblip is already load
-        answer_list = []
+        answer_dict = {}
         for result in retrieved_results['hits']['hits']:
             image_id = result['ImageID']
-            image_path = add_image_link(image_id)
-            raw_image = Image.open(BytesIO(requests.get(image_path).content))
+            image_name, year_month, day = extract_date_imagename(image_id)
+            image_path = settings.image_directory + '/' + year_month + '/' + day + '/' + image_name
+            raw_image = Image.open(image_path).convert('RGB')
             image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
             answer = instruct_model.generate({"image": image,
-                                     "prompt": f"Based on the provided images, answer this question {query}. Answer: "})
-            answer_list.append(answer)
-        return answer_list
+                                              "prompt": f"Based on the provided images, "
+                                                        f"answer this question {query}. Answer: "})
+            answer_dict[image_id] = answer
+        return answer_dict
     elif question_type == 1:
         # Process the metadata related question. Retrieve the metadata (time, location, city,)
         metadata_dict = {}
@@ -55,17 +55,17 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             model='gpt-3.5-turbo',
             messages=[
                 {'role': 'user',
-                 'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each event. Each event"
-                            "describe the time and location a lifelogger already did that action, answer this"
-                            f"question {query}"}
+                 'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each "
+                            f"event. Each event describe the time and location a lifelogger already did that action, "
+                            f"answer this question {query}"}
             ]
         )
-        return response['choices'][0]['message']['content']
+        answer = response['choices'][0]['message']['content']
+        metadata_dict['answer'] = answer
+        return metadata_dict
 
     else:
         return ['Unknown question type']
-
-
 
 
 if __name__ == "__main__":
@@ -88,7 +88,6 @@ if __name__ == "__main__":
     question12 = "What date did I eat pancakes with cherries and strawberries for breakfast outside?"
     question13 = "On what date did I meet Klaus Schoeffmann first in 2020?"
     question14 = "How many time did I have dinner at a restaurant in 2019"
-
 
     # import torch
     # from LAVIS.lavis.models import load_model_and_preprocess
@@ -115,5 +114,3 @@ if __name__ == "__main__":
     # print(f"Question 12: {question_classification(question12)}")
     # print(f"Question 13: {question_classification(question13)}")
     # print(f"Question 14: {question_classification(question14)}")
-
-
