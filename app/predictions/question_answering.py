@@ -33,9 +33,9 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
         # Process the visual related question. Assume that the blip2/instructblip is already load
         answer_dict = {}
         for result in retrieved_results['hits']['hits']:
-            image_id = result['ImageID']
+            image_id = result['_source']['ImageID']
             image_name, year_month, day = extract_date_imagename(image_id)
-            image_path = settings.image_directory + '/' + year_month + '/' + day + '/' + image_name
+            image_path = settings.image_directory + '/' + year_month + '/' + day + '/' + image_name + ".webp"
             raw_image = Image.open(image_path).convert('RGB')
             image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
             answer = instruct_model.generate({"image": image,
@@ -50,6 +50,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             metadata_dict['event_' + str(index)] = {}
             metadata_dict['event_' + str(index)]['time'] = result['_source']['local_time']
             metadata_dict['event_' + str(index)]['city'] = result['_source']['city']
+            metadata_dict['event_' + str(index)]['location'] = result['_source']["new_name"]
         # Call chatgpt to answer
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
