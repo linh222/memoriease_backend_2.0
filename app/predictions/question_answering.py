@@ -1,5 +1,7 @@
 import openai
 from PIL import Image
+from nltk import pos_tag
+from nltk.tokenize import WordPunctTokenizer
 
 from app.apis.api_utils import extract_date_imagename
 from app.config import settings
@@ -21,13 +23,68 @@ def question_classification(question: str):
             return 0
     return -1
 
+def process_question(question_query):
+
+    question = ['WDT', 'WP', 'WP$', 'WRB']
+    verb = ['VBZ', 'VBP', 'VBN', 'VBG', "VBD", 'VB']
+    noun = ['NNS', 'NNPS', 'NNP', 'NN']
+    adj = ['JJS', 'JJR', 'JJ']
+    md = ['MD']
+    dot_comma = [',', '.']
+    context = []
+    question_word = []
+    question_verb = []
+    question_context = []
+    unknown = []
+    flag = 'context'
+
+    tokenizer = WordPunctTokenizer()
+    question_query = tokenizer.tokenize(question_query)
+    tags = pos_tag(question_query)
+    question_index = 0
+    for index in range(len(tags)):
+        if tags[index][1] in question:
+            question_word.append(tags[index])
+            flag = 'question'
+            question_index = index
+        elif flag == 'question' and tags[index][1] in noun and (question_index + 2) >= index:
+            question_word.append(tags[index])
+        elif flag == 'question' and tags[index][1] in verb and len(question_verb) == 0:
+            question_verb.append(tags[index])
+        elif tags[index][1] in dot_comma:
+            try:
+                if tags[index + 1][1] in question:
+                    flag = 'question'
+            except:
+                flag = 'context'
+        elif flag == 'question':
+            question_context.append(tags[index])
+        elif flag == 'context':
+            context.append(tags[index])
+        else:
+            unknown.append(tags[index])
+
+    context_query = question_context + context
+    context_query_return = ''
+    for cxt in context_query:
+        context_query_return += (' ' + cxt[0])
+
+    question_to_ask = question_word + question_verb + question_context + context
+    question_to_ask_return = ''
+    for cxt in question_to_ask:
+        if cxt[1] != 'CD':
+            question_to_ask_return += (' ' + cxt[0])
+
+    return context_query_return, question_to_ask_return
+
 
 def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2_embed_model, blip2_txt_processor,
                    instruct_model, instruct_vis_processor, device):
-    retrieved_results = retrieve_image(concept_query=query, embed_model=blip2_embed_model,
+    context, question = process_question(query)
+    retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
                                        txt_processor=blip2_txt_processor, semantic_name=semantic_name,
                                        start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=10)
-    question_type = question_classification(query)
+    question_type = question_classification(question)
 
     if question_type == 0:
         # Process the visual related question. Assume that the blip2/instructblip is already load
@@ -40,7 +97,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
             answer = instruct_model.generate({"image": image,
                                               "prompt": f"Based on the provided images, "
-                                                        f"answer this question {query}. Answer: "})
+                                                        f"answer this question {question}. Answer: "})
             answer_dict[image_id] = answer
         return answer_dict
     elif question_type == 1:
@@ -57,8 +114,8 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             messages=[
                 {'role': 'user',
                  'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each "
-                            f"event. Each event describe the time and location a lifelogger already did that action, "
-                            f"answer this question {query}"}
+                            f"event. Each event describe the time, city and location a I {context}"
+                            f"answer this question {question}"}
             ]
         )
         answer = response['choices'][0]['message']['content']
