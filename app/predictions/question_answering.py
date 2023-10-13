@@ -108,14 +108,14 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             metadata_dict['event_' + str(index)]['time'] = result['_source']['local_time']
             metadata_dict['event_' + str(index)]['city'] = result['_source']['city']
             metadata_dict['event_' + str(index)]['location'] = result['_source']["new_name"]
+            metadata_dict['event_' + str(index)]['event'] = context
         # Call chatgpt to answer
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
             messages=[
                 {'role': 'user',
                  'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each "
-                            f"event. Each event describe the time, city and location a I {context}"
-                            f"answer this question {question}"}
+                            f"event. Answer this question {question}"}
             ]
         )
         answer = response['choices'][0]['message']['content']
