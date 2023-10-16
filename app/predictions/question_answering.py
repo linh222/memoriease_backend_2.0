@@ -99,7 +99,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             answer = instruct_model.generate({"image": image,
                                               "prompt": f"Based on the provided images, "
                                                         f"answer this question {query}. Answer: "})
-            answer_dict[image_id] = answer
+            answer_dict[image_id] = answer[0]
         return answer_aggregation(answer_dict)
     elif question_type == 1:
         # Process the metadata related question. Retrieve the metadata (time, location, city,)
