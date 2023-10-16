@@ -125,6 +125,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
                 )
                 answer = response['choices'][0]['message']['content']
                 answer_dict['answer'] = answer
+                count += 1
             else:
                 return ['Unknown question type']
     return answer_aggregation(answer_dict)
