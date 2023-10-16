@@ -116,8 +116,8 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             messages=[
                 {'role': 'user',
                  'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each "
-                            f"event. Answer this question {query} by return a dictionary of key is answer and value is "
-                            f"the number of time that key in data."}
+                            f"event. Answer this question {query} by returning only one dictionary of key is answer and"
+                            f" value is the number of time that key in data."}
             ]
         )
         answer = response['choices'][0]['message']['content']
