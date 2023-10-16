@@ -25,7 +25,6 @@ def question_classification(question: str):
 
 
 def process_question(question_query):
-
     question = ['WDT', 'WP', 'WP$', 'WRB']
     verb = ['VBZ', 'VBP', 'VBN', 'VBG', "VBD", 'VB']
     noun = ['NNS', 'NNPS', 'NNP', 'NN']
@@ -88,10 +87,16 @@ def process_question(question_query):
 def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2_embed_model, blip2_txt_processor,
                    instruct_model, instruct_vis_processor, device):
     context, question, question_confirm = process_question(query)
-    retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
-                                       txt_processor=blip2_txt_processor, semantic_name=semantic_name,
-                                       start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=10)
     question_type = question_classification(query)
+    if question_type == 0:
+        retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
+                                           txt_processor=blip2_txt_processor, semantic_name=semantic_name,
+                                           start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=5)
+    else:
+        retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
+                                           txt_processor=blip2_txt_processor, semantic_name=semantic_name,
+                                           start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=30)
+
     answer_dict = {}
     count = 0
     for result in retrieved_results['hits']['hits']:
@@ -101,8 +106,8 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
         raw_image = Image.open(image_path).convert('RGB')
         image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
         confirm = instruct_model.generate({"image": image,
-                                          "prompt": f"Based on the provided images, "
-                                                    f"answer this question {question_confirm}. Answer: "})
+                                           "prompt": f"Based on the provided images, "
+                                                     f"answer this question {question_confirm}. Answer: "})
         if ~('no' in confirm[0].lower() or 'wrong' in confirm[0].lower()):
             if question_type == 0:
                 answer = instruct_model.generate({"image": image,
@@ -172,7 +177,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
 
 def answer_aggregation(result_dict):
     if 'answer' in result_dict:
-        #the result for metadata related question
+        # the result for metadata related question
         return result_dict['answer']
     else:
         # the result for visual related question
