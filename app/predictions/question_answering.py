@@ -116,7 +116,8 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             messages=[
                 {'role': 'user',
                  'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each "
-                            f"event. Answer this question {query}"}
+                            f"event. Answer this question {query} by return a dictionary of key is answer and value is "
+                            f"the number of time that key in data."}
             ]
         )
         answer = response['choices'][0]['message']['content']
@@ -125,6 +126,16 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
 
     else:
         return ['Unknown question type']
+
+
+def answer_aggregation(result_dict):
+    if 'answer' in result_dict:
+        #the result for metadata related question
+        return result_dict['answer']
+    else:
+        # the result for visual related question
+        list_answer = list(result_dict.values())
+        return {item: list_answer.count(item) for item in list_answer}
 
 
 if __name__ == "__main__":
