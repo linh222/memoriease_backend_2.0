@@ -23,6 +23,7 @@ def question_classification(question: str):
             return 0
     return -1
 
+
 def process_question(question_query):
 
     question = ['WDT', 'WP', 'WP$', 'WRB']
@@ -84,7 +85,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
     retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
                                        txt_processor=blip2_txt_processor, semantic_name=semantic_name,
                                        start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=10)
-    question_type = question_classification(question)
+    question_type = question_classification(query)
 
     if question_type == 0:
         # Process the visual related question. Assume that the blip2/instructblip is already load
@@ -97,7 +98,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
             answer = instruct_model.generate({"image": image,
                                               "prompt": f"Based on the provided images, "
-                                                        f"answer this question {question}. Answer: "})
+                                                        f"answer this question {query}. Answer: "})
             answer_dict[image_id] = answer
         return answer_dict
     elif question_type == 1:
@@ -108,14 +109,14 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
             metadata_dict['event_' + str(index)]['time'] = result['_source']['local_time']
             metadata_dict['event_' + str(index)]['city'] = result['_source']['city']
             metadata_dict['event_' + str(index)]['location'] = result['_source']["new_name"]
+            metadata_dict['event_' + str(index)]['event'] = context
         # Call chatgpt to answer
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
             messages=[
                 {'role': 'user',
                  'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each "
-                            f"event. Each event describe the time, city and location a I {context}"
-                            f"answer this question {question}"}
+                            f"event. Answer this question {query}"}
             ]
         )
         answer = response['choices'][0]['message']['content']
