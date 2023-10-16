@@ -76,56 +76,96 @@ def process_question(question_query):
         if cxt[1] != 'CD':
             question_to_ask_return += (' ' + cxt[0])
 
-    return context_query_return, question_to_ask_return
+    question_to_confirm = question_context + context
+    question_to_confirm_return = 'Did'
+    for cxt in question_to_confirm:
+        if cxt[1] != 'CD':
+            question_to_confirm_return += (' ' + cxt[0])
+    question_to_confirm_return += ' in the images?'
+    return context_query_return, question_to_ask_return, question_to_confirm_return
 
 
 def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2_embed_model, blip2_txt_processor,
                    instruct_model, instruct_vis_processor, device):
-    context, question = process_question(query)
+    context, question, question_confirm = process_question(query)
     retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
                                        txt_processor=blip2_txt_processor, semantic_name=semantic_name,
                                        start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=10)
     question_type = question_classification(query)
+    answer_dict = {}
+    count = 0
+    for result in retrieved_results['hits']['hits']:
+        image_id = result['_source']['ImageID']
+        image_name, year_month, day = extract_date_imagename(image_id)
+        image_path = settings.image_directory + '/' + year_month + '/' + day + '/' + image_name + ".webp"
+        raw_image = Image.open(image_path).convert('RGB')
+        image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
+        confirm = instruct_model.generate({"image": image,
+                                          "prompt": f"Based on the provided images, "
+                                                    f"answer this question {question_confirm}. Answer: "})
+        if 'yes' in confirm[0].lower() or 'right' in confirm[0].lower():
+            if question_type == 0:
+                answer = instruct_model.generate({"image": image,
+                                                  "prompt": f"Based on the provided images, "
+                                                            f"answer this question {query}. Answer: "})
+                answer_dict[image_id] = answer[0]
+            elif question_type == 1:
+                answer_dict['event_' + str(count)] = {}
+                answer_dict['event_' + str(count)]['time'] = result['_source']['local_time']
+                answer_dict['event_' + str(count)]['city'] = result['_source']['city']
+                answer_dict['event_' + str(count)]['location'] = result['_source']["new_name"]
+                answer_dict['event_' + str(count)]['event'] = context
+                response = openai.ChatCompletion.create(
+                    model='gpt-3.5-turbo',
+                    messages=[
+                        {'role': 'user',
+                         'content': f"Base on the provided data {answer_dict} in dictionary for with each key is each "
+                                    f"event. Answer this question {query}: "}
+                    ]
+                )
+                answer = response['choices'][0]['message']['content']
+                answer_dict['answer'] = answer
+            else:
+                return ['Unknown question type']
+    return answer_aggregation(answer_dict)
 
-    if question_type == 0:
-        # Process the visual related question. Assume that the blip2/instructblip is already load
-        answer_dict = {}
-        for result in retrieved_results['hits']['hits']:
-            image_id = result['_source']['ImageID']
-            image_name, year_month, day = extract_date_imagename(image_id)
-            image_path = settings.image_directory + '/' + year_month + '/' + day + '/' + image_name + ".webp"
-            raw_image = Image.open(image_path).convert('RGB')
-            image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
-            answer = instruct_model.generate({"image": image,
-                                              "prompt": f"Based on the provided images, "
-                                                        f"answer this question {query}. Answer: "})
-            answer_dict[image_id] = answer[0]
-        return answer_aggregation(answer_dict)
-    elif question_type == 1:
-        # Process the metadata related question. Retrieve the metadata (time, location, city,)
-        metadata_dict = {}
-        for index, result in enumerate(retrieved_results['hits']['hits']):
-            metadata_dict['event_' + str(index)] = {}
-            metadata_dict['event_' + str(index)]['time'] = result['_source']['local_time']
-            metadata_dict['event_' + str(index)]['city'] = result['_source']['city']
-            metadata_dict['event_' + str(index)]['location'] = result['_source']["new_name"]
-            metadata_dict['event_' + str(index)]['event'] = context
-        # Call chatgpt to answer
-        response = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo',
-            messages=[
-                {'role': 'user',
-                 'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each "
-                            f"event. Answer this question {query} by returning only one dictionary of key is answer and"
-                            f" value is the number of time that key in data."}
-            ]
-        )
-        answer = response['choices'][0]['message']['content']
-        metadata_dict['answer'] = answer
-        return answer_aggregation(metadata_dict)
-
-    else:
-        return ['Unknown question type']
+    # if question_type == 0:
+    #     # Process the visual related question. Assume that the blip2/instructblip is already load
+    #     answer_dict = {}
+    #     for result in retrieved_results['hits']['hits']:
+    #         image_id = result['_source']['ImageID']
+    #         image_name, year_month, day = extract_date_imagename(image_id)
+    #         image_path = settings.image_directory + '/' + year_month + '/' + day + '/' + image_name + ".webp"
+    #         raw_image = Image.open(image_path).convert('RGB')
+    #         image = instruct_vis_processor["eval"](raw_image).unsqueeze(0).to(device)
+    #         answer = instruct_model.generate({"image": image,
+    #                                           "prompt": f"Based on the provided images, "
+    #                                                     f"answer this question {query}. Answer: "})
+    #         answer_dict[image_id] = answer[0]
+    #     return answer_aggregation(answer_dict)
+    # elif question_type == 1:
+    #     # Process the metadata related question. Retrieve the metadata (time, location, city,)
+    #     metadata_dict = {}
+    #     for index, result in enumerate(retrieved_results['hits']['hits']):
+    #         metadata_dict['event_' + str(index)] = {}
+    #         metadata_dict['event_' + str(index)]['time'] = result['_source']['local_time']
+    #         metadata_dict['event_' + str(index)]['city'] = result['_source']['city']
+    #         metadata_dict['event_' + str(index)]['location'] = result['_source']["new_name"]
+    #         metadata_dict['event_' + str(index)]['event'] = context
+    #     # Call chatgpt to answer
+    #     response = openai.ChatCompletion.create(
+    #         model='gpt-3.5-turbo',
+    #         messages=[
+    #             {'role': 'user',
+    #              'content': f"Base on the provided data {metadata_dict} in dictionary for with each key is each "
+    #                         f"event. Answer this question {query}: "}
+    #         ]
+    #     )
+    #     answer = response['choices'][0]['message']['content']
+    #     metadata_dict['answer'] = answer
+    #     return answer_aggregation(metadata_dict)
+    # else:
+    #     return ['Unknown question type']
 
 
 def answer_aggregation(result_dict):
