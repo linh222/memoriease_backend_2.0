@@ -103,11 +103,12 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
         confirm = instruct_model.generate({"image": image,
                                           "prompt": f"Based on the provided images, "
                                                     f"answer this question {question_confirm}. Answer: "})
-        if 'yes' in confirm[0].lower() or 'right' in confirm[0].lower():
+        if ~('no' in confirm[0].lower() or 'wrong' in confirm[0].lower()):
             if question_type == 0:
                 answer = instruct_model.generate({"image": image,
                                                   "prompt": f"Based on the provided images, "
-                                                            f"answer this question {query}. Answer: "})
+                                                            f"answer this question {query}. "
+                                                            f"Answer in format list[yyyy-mm-dd]: "})
                 answer_dict[image_id] = answer[0]
             elif question_type == 1:
                 answer_dict['event_' + str(count)] = {}
