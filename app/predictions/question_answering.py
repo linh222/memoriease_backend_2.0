@@ -100,7 +100,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
                                               "prompt": f"Based on the provided images, "
                                                         f"answer this question {query}. Answer: "})
             answer_dict[image_id] = answer
-        return answer_dict
+        return answer_aggregation(answer_dict)
     elif question_type == 1:
         # Process the metadata related question. Retrieve the metadata (time, location, city,)
         metadata_dict = {}
@@ -122,7 +122,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
         )
         answer = response['choices'][0]['message']['content']
         metadata_dict['answer'] = answer
-        return metadata_dict
+        return answer_aggregation(metadata_dict)
 
     else:
         return ['Unknown question type']
