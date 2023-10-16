@@ -135,7 +135,8 @@ def answer_aggregation(result_dict):
     else:
         # the result for visual related question
         list_answer = list(result_dict.values())
-        return {item: list_answer.count(item) for item in list_answer}
+        final_result = {item: list_answer.count(item) for item in list_answer}
+        return final_result
 
 
 if __name__ == "__main__":
