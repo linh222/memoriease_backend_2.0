@@ -113,7 +113,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
                 answer = instruct_model.generate({"image": image,
                                                   "prompt": f"Based on the provided images, "
                                                             f"answer this question {query}. "
-                                                            f"Answer in format list[yyyy-mm-dd]: "})
+                                                            f"Answer: "})
                 answer_dict[image_id] = answer[0]
             elif question_type == 1:
                 answer_dict['event_' + str(count)] = {}
@@ -121,6 +121,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
                 answer_dict['event_' + str(count)]['city'] = result['_source']['city']
                 answer_dict['event_' + str(count)]['location'] = result['_source']["new_name"]
                 answer_dict['event_' + str(count)]['event'] = context
+
                 response = openai.ChatCompletion.create(
                     model='gpt-3.5-turbo',
                     messages=[
