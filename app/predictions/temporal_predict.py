@@ -40,7 +40,7 @@ def time_processing_event(list_event_query, main_event, time_gap, time_period, l
                   'weekday': weekday,
                   'time_filter': time}
     previous_filter, previous_must = construct_filter(query_dict)
-    previous_filter_template = build_query_template(previous_filter, previous_must, embed, size=1)
+    previous_filter_template = build_query_template(previous_filter, embed, size=1)
     list_event_query.append(previous_filter_template)
     return list_event_query
 

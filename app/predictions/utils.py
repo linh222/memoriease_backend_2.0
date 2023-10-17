@@ -280,7 +280,7 @@ def construct_filter(query_dict):
     return filter, must
 
 
-def build_query_template(filter, must, text_embedding, size=100):
+def build_query_template(filter, text_embedding, size=100):
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id', 'similar_image', 'city', 'event', 'group']
     query_template = {
 
