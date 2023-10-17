@@ -35,7 +35,7 @@ def retrieve_image(
 
     filter, must = construct_filter(query_dict)
 
-    query_template = build_query_template(filter, must, text_embedding, size=size)
+    query_template = build_query_template(filter, text_embedding, size=size)
     query_template = json.dumps(query_template)
     url = f"{HOST}/{INDICES}/_search"
 
