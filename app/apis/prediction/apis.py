@@ -13,8 +13,7 @@ from app.predictions.temporal_predict import temporal_search
 from app.predictions.utils import automatic_logging
 from .schemas import (
     FeatureModelSingleSearch,
-    FeatureModelTemporalSearch,
-    FeatureModelQuestionAnswering
+    FeatureModelTemporalSearch
 )
 
 router = APIRouter()
@@ -22,9 +21,9 @@ router = APIRouter()
 
 # Function to initialize resources
 def initialize_resources():
+    # Load resource in the start
     global es, model, vis_processors, txt_processor, logger
     global instruct_model, instruct_vis_processor, instruct_txt_processor, device
-    es = Elasticsearch(hosts=[HOST], timeout=100)
 
     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
     model, vis_processors, txt_processor = load_model_and_preprocess(
@@ -34,8 +33,7 @@ def initialize_resources():
         name="blip2_t5_instruct", model_type="flant5xl", is_eval=True, device=device
     )
 
-    print('Loading 2 models successfully at')
-    print("cuda" if torch.cuda.is_available() else "cpu")
+    print('Loading 2 models successfully at ', device)
 
 
 @router.post(
@@ -43,16 +41,20 @@ def initialize_resources():
     status_code=status.HTTP_200_OK,
 )
 async def predict_image_temporal(feature: FeatureModelTemporalSearch, api_key: APIKey = Depends(get_api_key)):
+    # Predict temporal
+    # Input: before, main, after event, filters
+    # Output: list of dicts with three keys: current_event, previous_event, after_event
     query = feature.query
     semantic_name = feature.semantic_name
 
+    # Perform search
     results = temporal_search(concept_query=query, embed_model=model, txt_processor=txt_processor,
                               previous_event=feature.previous_event,
                               next_event=feature.next_event, time_gap=feature.time_gap, semantic_name=semantic_name)
     results = add_image_link(results)
 
     # Automatic run Logging query string
-    automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
+    # automatic_logging(results=results, output_file_name='ntcir_automatic_logging')
     return results
 
 
@@ -61,6 +63,9 @@ async def predict_image_temporal(feature: FeatureModelTemporalSearch, api_key: A
     status_code=status.HTTP_200_OK,
 )
 async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Depends(get_api_key)):
+    # Predict single moment
+    # Input: query, filters
+    # Output: list of dicts with 1 keys: current_event
     query = feature.query
     topic = feature.topic
     semantic_name = feature.semantic_name
@@ -68,6 +73,7 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
     end_hour = feature.end_hour
     is_weekend = feature.is_weekend
 
+    # Perform search
     raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor,
                                 semantic_name=semantic_name, start_hour=start_hour,
                                 end_hour=end_hour, is_weekend=is_weekend)
@@ -84,7 +90,9 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
     "/question_answering",
     status_code=status.HTTP_200_OK,
 )
-async def question_answering(feature: FeatureModelQuestionAnswering, api_key: APIKey = Depends(get_api_key)):
+async def question_answering(feature: FeatureModelSingleSearch, api_key: APIKey = Depends(get_api_key)):
+    # Question answering endpoint, give the question and some filters if possible
+    # Output: dictionary with key: question.
     query = feature.query
     topic = feature.topic
     semantic_name = feature.semantic_name

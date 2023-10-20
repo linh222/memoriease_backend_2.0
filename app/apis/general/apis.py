@@ -16,11 +16,13 @@ def get_settings():
 
 @router.get("/")
 async def root():
+    # Root path, show the API use for
     return {"message": "Image Retrieval Model"}
 
 
 @router.get("/info")
 async def info(settings: config.Settings = Depends(get_settings), api_key: APIKey = Depends(get_api_key)):
+    # Information of the app
     return {
         "app_name": settings.APP_NAME,
         "model_version": settings.API_MODEL_VERSION,
@@ -29,6 +31,7 @@ async def info(settings: config.Settings = Depends(get_settings), api_key: APIKe
 
 @router.get("/health", status_code=status.HTTP_200_OK, )
 async def health_check():
+    # Health check
     return {"status": "OK", "message": "I am healthy"}
 
 

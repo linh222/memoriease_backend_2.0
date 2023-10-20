@@ -1,31 +1,37 @@
 import ast
+from io import StringIO
 
+import boto3
 import pandas as pd
 from fastapi import APIRouter, status
 
 from app.apis.image_by_day.schema import FeatureModelImage
-from app.config import root_path, IMAGE_SERVER, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET
-import boto3
-from io import StringIO
+from app.config import IMAGE_SERVER, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET
+
 router = APIRouter()
 
 # TODO: add visualize for lsc20
+# Load data from s3. the event segmentation for visual image by day -> day -> event -> image
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
 response = s3.get_object(Bucket=BUCKET, Key='image_by_event_for_visualization1.csv')
 csv_data = response['Body'].read().decode('utf-8')
 df_image = pd.read_csv(StringIO(csv_data))
 
 
-def generate_image_link(image_id):
+def generate_image_link(image_id, IMAGE_SERVER):
+    # Create the image link from image id
+    # Input: image_id: 20190101_202020
+    # Output: image link: http://localhost:9200/201901/01/20190101_202020.webp
     year_month = image_id[:6]
     day = image_id[6:8]
     return f"{IMAGE_SERVER}/{year_month}/{day}/{image_id}.webp"
 
 
 def add_link(row):
-    row['image_link'] = generate_image_link(row['ImageID'])
+    # Post process to add image link, create list of similar images, ImageID and local time
+    row['image_link'] = generate_image_link(row['ImageID'], IMAGE_SERVER)
     similar_images = ast.literal_eval(row['image_event'])
-    row['image_event'] = [generate_image_link(image) for image in similar_images]
+    row['image_event'] = [generate_image_link(image, IMAGE_SERVER) for image in similar_images]
     row['ImageID'] += '.jpg'
     row['local_time'] = row['datetime'].replace(' ', 'T')
     return row
@@ -33,6 +39,10 @@ def add_link(row):
 
 @router.post("/image", status_code=status.HTTP_200_OK)
 async def get_image(feature: FeatureModelImage):
+    # API endpoint to get image by date
+    # Input: day_month_year: 2019-01-01, time_period: morning, hour: 1-> 24
+    # Output: all image in the filtered space.
+
     date = feature.day_month_year
     time_period = feature.time_period
     hour = feature.hour
