@@ -24,10 +24,10 @@ git clone git@github.com:linh222/memoriease_backend_2.0.git
 cd memoriease_backend_2.0
 
 # Create a virtual environment (optional but recommended)
-python -m venv venv
+python -m venv memoriease_backend_2
 
 # Activate the virtual environment
-source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+source memoriease_backend_2/bin/activate  # On Windows, use `memoriease_backend_2\Scripts\activate`
 
 # Install project dependencies
 pip install -r requirements.txt
@@ -45,6 +45,7 @@ cd folder/to/elasticsearch
 
 # Ingest data
 cd memoriease_backend_2.0
+python app/download_nltk.py
 python app/ingest_data_no_segmentation.py
 ```
 
@@ -76,6 +77,13 @@ request methods, and expected responses.
   + query: the full-text query
   + image_id: the list of relevant images
   + semantic_name: the semantic name for filtering
++ /question_answering: POST request to ask and answer question about lifelog
+  + query: full text question
+  + topic: topic name for logging
+  + semantic_name: the semantic name for filtering
+  + start_hour: (optional) 0-> 23 for filtering start hour of event
+  + end_hour: (optional) 0-> 23 for filtering end hour of event
+  + is_weekend: (optional) 1 or 0, filter the event is in weekend or not.
 
 
 ## Testing

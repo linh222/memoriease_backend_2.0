@@ -1,24 +1,13 @@
 import json
 
-import requests
-
 from app.config import HOST, INDICES
 from app.predictions.blip_extractor import extract_query_blip_embedding
-from app.predictions.utils import process_query, construct_filter, build_query_template
+from app.predictions.utils import process_query, construct_filter, build_query_template, send_request_to_elasticsearch
 
 
-def retrieve_image(
-        concept_query: str,
-        embed_model,
-        txt_processor,
-        semantic_name="",
-        start_hour="",
-        end_hour="",
-        is_weekend="",
-        size=100
-):
+def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name="",
+                   start_hour="", end_hour="", is_weekend="", size=100):
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(concept_query)
-
     text_embedding = extract_query_blip_embedding(processed_query, embed_model, txt_processor)
 
     query_dict = {
@@ -33,20 +22,12 @@ def retrieve_image(
         "is_weekend": is_weekend if is_weekend is not None else '',
     }
 
-    filter, must = construct_filter(query_dict)
-
-    query_template = build_query_template(filter, text_embedding, size=size)
+    filters = construct_filter(query_dict)
+    query_template = build_query_template(filters, text_embedding, size=size)
     query_template = json.dumps(query_template)
-    url = f"{HOST}/{INDICES}/_search"
 
-    with requests.Session() as session:
-        try:
-            response = session.post(url, data=query_template, headers={"Content-Type": "application/json"})
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            ValueError(e)
-            return None
+    results = send_request_to_elasticsearch(HOST, INDICES, query_template)
+    return results
 
 # if __name__ == "__main__":
 #     # Remote server

@@ -11,6 +11,7 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_metadata_submission(feature: ResponseModel):
+    # Get the interaction in UI and logging
     try:
         with open(f'{root_path}/app/evaluation_model/request_log.txt') as file:
             data = file.readlines()

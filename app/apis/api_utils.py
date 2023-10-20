@@ -9,6 +9,7 @@ from fastapi import Request
 from app.config import IMAGE_SERVER, root_path, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET
 from app.predictions.utils import process_query
 
+# Load resource from s3 for event segmentation
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
 response = s3.get_object(Bucket=BUCKET, Key='event_segmentation_lsc20_lsc23.csv')
 csv_data = response['Body'].read().decode('utf-8')
@@ -16,6 +17,7 @@ df_event = pd.read_csv(StringIO(csv_data), dtype={"path": 'str', 'event_id': 'in
 
 
 def add_image_link(results):
+    # add image link for the final output
     if len(results) >= 1:
         for result in results:
             image_id = result['current_event']['_source']['ImageID']

@@ -11,7 +11,7 @@ from app.config import HOST, INDICES
 from app.config import root_path
 from app.predictions.blip_extractor import extract_query_blip_embedding
 from app.predictions.temporal_predict import time_processing_event, send_request_by_event
-from app.predictions.utils import build_query_template
+from app.predictions.utils import build_query_template, send_request_to_elasticsearch, calculate_overall_score
 
 load_dotenv(str(root_path) + '/.env')
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -25,6 +25,12 @@ predefined_city.remove('')
 
 
 def send_gpt_request(query):
+    # Ask chatgpt to complete the text
+    # Input: query, plus with prompt and instruction format for chatgpt
+    # Output: the result
+    # TODO Prompt engineering to improve the accuracy
+    # TODO Iterate until chatgpt give the correct format
+
     prompt = """Query: Having lunch with Dermot, who was a guest speaker at my lecture. After lunch, he gave a 
     lecture to my class about Lessons in Innovation & Entrepreneurship while I was sitting in the front row. It was 
     in November 2019. Result: [{'term': {'concept': 'Having lunch with Dermot, who was a guest speaker at my 
@@ -61,10 +67,11 @@ def send_gpt_request(query):
 
 
 def construct_filter(query):
+    # Construct query from textual query.
     # Input: The query
     # Output: The elasticsearch query template with KNN retrieval and filters
     main_event_context, previous_event_context, after_event_context = '', '', ''
-    filters = eval(send_gpt_request(query))
+    filters = eval(send_gpt_request(query)) # Convert to dictionary
     new_filters = []
     for each_filter in filters:
         if 'concept' in each_filter[list(each_filter.keys())[0]]:
@@ -79,12 +86,14 @@ def construct_filter(query):
                 # perform temporal search
                 previous_event_context = each_filter['term']['before_concept']
         else:
-            new_filters.append(filter)
+            # Filters with semantic name, hour, city, ...
+            new_filters.append(each_filter)
     return new_filters, main_event_context, previous_event_context, after_event_context
 
 
 def retrieve_result(main_event_context: str, previous_event_context: str, after_event_context: str, filters: list,
                     embed_model, txt_processor, size=100):
+    # Retrieve the data from the constructed filters
     if main_event_context == '':
         ValueError("The query should not be blank.")
 
@@ -109,20 +118,10 @@ def retrieve_result(main_event_context: str, previous_event_context: str, after_
     text_embedding = extract_query_blip_embedding(main_event_context, embed_model, txt_processor)
     query_template = build_query_template(filter=new_filters, text_embedding=text_embedding, size=size)
     query_template = json.dumps(query_template)
-    url = f"{HOST}/{INDICES}/_search"
-
-    # send request to elastic search
-    with requests.Session() as session:
-        try:
-            response = session.post(url, data=query_template, headers={"Content-Type": "application/json"})
-            response.raise_for_status()
-            results = response.json()
-        except requests.exceptions.RequestException as e:
-            ValueError(e)
-            return None
+    results = send_request_to_elasticsearch(HOST, INDICES, query_template)
 
     # check if null value
-    if 'hits' not in results:
+    if results is None or 'hits' not in results:
         ValueError("Modify the query to get meaningful results")
 
     results = [{'current_event': each_result} for each_result in results['hits']['hits']]
@@ -161,14 +160,8 @@ def retrieve_result(main_event_context: str, previous_event_context: str, after_
         if after_event_context != '':
             new_results = send_request_by_event(new_result=new_results, event_query=list_next_event_query,
                                                 type='next')
-        for index in range(len(new_results)):
-            overall_score = new_results[index]['current_event']['_score'] * 0.6
-            if "previous_event" in new_results[index].keys() and new_results[index]['previous_event']['_id'] is not None:
-                overall_score = overall_score + (new_results[index]['previous_event']['_score'] * 0.2)
-            if "next_event" in new_results[index].keys() and new_results[index]['next_event']['_id'] is not None:
-                overall_score = overall_score + (new_results[index]['next_event']['_score'] * 0.2)
-            new_results[index]['overall_score'] = overall_score
-        new_results = sorted(new_results, key=lambda d: d['overall_score'], reverse=True)
+
+        new_results = calculate_overall_score(new_results)
         return new_results
     else:
         return results
