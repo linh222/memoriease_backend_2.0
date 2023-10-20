@@ -1,11 +1,8 @@
-import json
 import os
 
 import openai
-import torch
 from dotenv import load_dotenv
 
-from LAVIS.lavis.models import load_model_and_preprocess
 from app.config import root_path
 from app.predictions.predict import retrieve_image
 
@@ -14,6 +11,9 @@ openai.api_key = os.environ.get("openai_key")
 
 
 def query_expansion(concept_query: str, embed_model, txt_processor):
+    # Create multiple queries, retrieve the results and get the agg results
+
+    # Create paraphrase query from original query
     paraphrased_query = chatgpt_query_paraphrase(concept_query)
 
     # Fetch original and paraphrased results in a single call
@@ -24,8 +24,8 @@ def query_expansion(concept_query: str, embed_model, txt_processor):
     paraphrase_result = paraphrase_result['hits']['hits']
 
     # Use dictionary comprehensions to create original_dict and paraphrase_dict
-    original_dict = {result['_id']: result['_score'] for result in original_result}
-    paraphrase_dict = {result['_id']: result['_score'] for result in paraphrase_result}
+    original_dict = {retrieved_result['_id']: retrieved_result['_score'] for retrieved_result in original_result}
+    paraphrase_dict = {retrieved_result['_id']: retrieved_result['_score'] for retrieved_result in paraphrase_result}
 
     merge_dict = {}
 
@@ -51,30 +51,29 @@ def get_source(_id, data_dict):
 
 
 def chatgpt_query_paraphrase(query):
-    promt = 'Create a new sentence with different words with the same meaning of this sentence: '
+    prompt = 'Create a new sentence with different words with the same meaning of this sentence: '
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "user", "content": promt + query},
+            {"role": "user", "content": prompt + query},
         ]
     )
     return response['choices'][0]['message']['content']
 
-
-if __name__ == "__main__":
-    # # Remote server
-    import time
-
-    start_time = time.time()
-    device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
-    model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
-                                                                      model_type="coco", is_eval=True,
-                                                                      device=device)
-    print("cuda" if torch.cuda.is_available() else "cpu")
-    print(time.time() - start_time, 'seconds')
-
-    result = query_expansion(concept_query="""Exotic birds. Find examples of multicoloured parrots (real or fake) in a
-    tree at our rented house in Thailand.""", embed_model=model, txt_processor=txt_processors)
-
-    with open('{}/app/evaluation_model/result.json'.format(root_path), 'w') as f:
-        json.dump(result, f)
+# if __name__ == "__main__":
+#     # # Remote server
+#     import time
+#
+#     start_time = time.time()
+#     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
+#     model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
+#                                                                       model_type="coco", is_eval=True,
+#                                                                       device=device)
+#     print("cuda" if torch.cuda.is_available() else "cpu")
+#     print(time.time() - start_time, 'seconds')
+#
+#     result = query_expansion(concept_query="""Exotic birds. Find examples of multicoloured parrots (real or fake) in a
+#     tree at our rented house in Thailand.""", embed_model=model, txt_processor=txt_processors)
+#
+#     with open('{}/app/evaluation_model/result.json'.format(root_path), 'w') as f:
+#         json.dump(result, f)

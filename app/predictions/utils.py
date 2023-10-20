@@ -1,13 +1,19 @@
 import pickle
 import re
 
+import requests
+
 from app.config import root_path
 from app.predictions.mysceal_nlp_utils.common import locations
 from app.predictions.mysceal_nlp_utils.pos_tag import Tagger
 
 
 def time_contructor(date):
+    # Datetime processing for the datetime in the query, from text (2019 January) to 2019-01-01
+    # Input: any text of datetime
+    # Output: ISO Format of time: 2019-01-01
     start_time1, end_time1 = '', ''
+    # Filter years
     years = ['2015', '2016', '2018', '2019', '2020']
     year = ''
     for y in years:
@@ -19,6 +25,7 @@ def time_contructor(date):
     list_month = {'january': '01', 'february': '02', 'march': '03', 'april': '04', 'may': '05',
                   'june': '06', 'july': '07', 'august': '08', 'september': '09', 'october': '10',
                   'november': '11', 'december': '12'}
+    # Filter months
     month = ''
     for month_query in list_month.keys():
         if month_query in date:
@@ -101,6 +108,7 @@ valid_location = list(set(valid_location))
 
 
 def process_query(sent):
+    # extract relevant information in the query: keyword, time perios, weekday, time filter, location
     init_tagger = Tagger(locations)
     tags = init_tagger.tag(sent)
     processed_text = ''
@@ -137,40 +145,18 @@ def process_query(sent):
 
 
 def construct_filter(query_dict):
+    # Construct filter format for elastic search
     filter = []
-    must = []
     if query_dict['time_period'] != '':
-        must.append({
-            "match": {
-                'time_period': {
-                    'query': query_dict['time_period']
-                }
-            }
-        })
         filter.append({
             "term": {
                 'time_period': query_dict['time_period']
             }
         })
     if query_dict['weekday'] != '':
-        must.append({
-            "match": {
-                'day_of_week': {
-                    'query': query_dict['weekday']
-                }
-            }
-        })
         filter.append({
             "term": {
                 'day_of_week': query_dict['weekday']
-            }
-        })
-    if query_dict['list_keyword'] != '':
-        must.append({
-            "match": {
-                'Tags': {
-                    'query': query_dict['list_keyword']
-                }
             }
         })
     if len(query_dict['time_filter']) == 2:
@@ -226,13 +212,6 @@ def construct_filter(query_dict):
             }
         })
     if query_dict['location'] != '':
-        must.append({
-            'match': {
-                'city': {
-                    'query': query_dict['location']
-                }
-            }
-        })
         filter.append({
             "term": {
                 'city': query_dict['location']
@@ -277,10 +256,11 @@ def construct_filter(query_dict):
                     'group': query_dict['groups']
                 }
             })
-    return filter, must
+    return filter
 
 
 def build_query_template(filter, text_embedding, size=100):
+    # Build the query template to send to elastic search
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id', 'similar_image', 'city', 'event', 'group']
     query_template = {
 
@@ -300,6 +280,7 @@ def build_query_template(filter, text_embedding, size=100):
 
 
 def automatic_logging(results: list, output_file_name: str):
+    # Automatic logging the results for ntcir
     logging_data = []
     with open(f'{root_path}/app/evaluation_model/{output_file_name}.csv',
               'r') as file:
@@ -318,3 +299,32 @@ def automatic_logging(results: list, output_file_name: str):
             file.write('GROUP-ID,RUN-ID,TOPIC-ID,IMAGE-ID,SECONDS-ELAPSED,SCORE\n')
         for data in logging_data:
             file.write(data + '\n')
+
+
+def send_request_to_elasticsearch(HOST, INDICE, query):
+    # Send request to elastic search and return the results in form of list of dict
+    url = f"{HOST}/{INDICE}/_search"
+
+    # send request to elastic search
+    with requests.Session() as session:
+        try:
+            response = session.post(url, data=query, headers={"Content-Type": "application/json"})
+            response.raise_for_status()
+            results = response.json()
+            return results
+        except requests.exceptions.RequestException as e:
+            ValueError(e)
+            return None
+
+
+def calculate_overall_score(results, main_score=0.6, temporal_score=0.2):
+    # aggregate the results and resort with the overall score of main_score*main event + temporal_score*previous/next
+    for index in range(len(results)):
+        overall_score = results[index]['current_event']['_score'] * main_score
+        if "previous_event" in results[index].keys() and results[index]['previous_event']['_id'] is not None:
+            overall_score = overall_score + (results[index]['previous_event']['_score'] * temporal_score)
+        if "next_event" in results[index].keys() and results[index]['next_event']['_id'] is not None:
+            overall_score = overall_score + (results[index]['next_event']['_score'] * temporal_score)
+        results[index]['overall_score'] = overall_score
+    results = sorted(results, key=lambda d: d['overall_score'], reverse=True)
+    return results

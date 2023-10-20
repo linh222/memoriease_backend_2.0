@@ -2,21 +2,24 @@ import numpy as np
 from app.config import settings, HOST, INDICES
 import json
 import requests
-from app.predictions.utils import process_query, construct_filter, build_query_template
+from app.predictions.utils import process_query, construct_filter, send_request_to_elasticsearch
 from app.predictions.predict import retrieve_image
 
-def load_img_and_emb(image_id):
+
+def load_img_and_emb(image_id, directory):
+    # Get the image embedding
     year = image_id[:6]
     day = image_id[6:8]
-    emb_path = f'{settings.embed_directory}/{year}/{day}/{image_id}.npy'
+    emb_path = f'{directory}/{year}/{day}/{image_id}.npy'
     emb = np.load(emb_path)
     return emb
 
 
 def calculate_mean_emb(image_id):
+    # Aggregate the input images by mean
     list_embed = []
     for image in image_id:
-        emb = load_img_and_emb(image)
+        emb = load_img_and_emb(image, settings.embed_directory)
         list_embed.append(emb)
     avg_embed = sum(list_embed) / len(list_embed)
     return avg_embed
@@ -33,7 +36,7 @@ def relevance_image_similar(image_embedding, query, semantic_name, size=100):
         'time_filter': time_filter,
         'semantic_name': semantic_name if semantic_name is not None else ''
     }
-    filter, must = construct_filter(query_dict)
+    filters = construct_filter(query_dict)
     query_template = {
 
         "knn": {
@@ -41,20 +44,20 @@ def relevance_image_similar(image_embedding, query, semantic_name, size=100):
             "query_vector": image_embedding.tolist(),
             "k": size,
             "num_candidates": 1000,
-            "filter": filter
+            "filter": filters
         },
         "_source": col,
         "size": size,
     }
+
     query_template = json.dumps(query_template)
-    url = HOST + '/' + INDICES + '/_search'
-    headers = {"Content-Type": "application/json"}
-    res = requests.post(url, data=query_template, headers=headers)
-    return res.json()
+    results = send_request_to_elasticsearch(HOST, INDICES, query_template)
+    return results
 
 
 def pseudo_relevance_feedback(concept_query: str, embed_model, txt_processor, semantic_name=None,
-                   start_hour=None, end_hour=None, is_weekend=None, top_k=3):
+                              start_hour=None, end_hour=None, is_weekend=None, top_k=3):
+    # Retrieve top 3 and assume it as true results to get more similar images to top 3
     initial_result = retrieve_image(concept_query=concept_query, embed_model=embed_model, txt_processor=txt_processor,
                                     semantic_name=semantic_name, start_hour=start_hour, end_hour=end_hour,
                                     is_weekend=is_weekend)
