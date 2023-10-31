@@ -86,7 +86,13 @@ def process_question(question_query):
             question_to_ask_return += (' ' + cxt[0])
 
     question_to_confirm = question_context + context
-    question_to_confirm_return = 'Did'
+    if len(question_verb) == 0:  # Question start with a verb
+        question_to_confirm_return = ''
+    else:
+        if question_verb[0][0] in ['is', 'be', 'are', 'am', 'was', 'were']:
+            question_to_confirm_return = 'Was'
+        else:
+            question_to_confirm_return = 'Did'
     for cxt in question_to_confirm:
         if cxt[1] != 'CD':
             question_to_confirm_return += (' ' + cxt[0])
@@ -109,6 +115,7 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
                                            start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=30)
 
     answer_dict = {}
+    retrieved_context = ''
     count = 0
     for result in retrieved_results['hits']['hits']:
         # Get the image content to analyse
@@ -131,26 +138,30 @@ def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2
                 answer_dict[image_id] = answer[0]
             elif question_type == 1:
                 # Create data dict for LLM
-                answer_dict['event_' + str(count)] = {}
-                answer_dict['event_' + str(count)]['time'] = result['_source']['local_time']
-                answer_dict['event_' + str(count)]['city'] = result['_source']['city']
-                answer_dict['event_' + str(count)]['location'] = result['_source']["new_name"]
-                answer_dict['event_' + str(count)]['event'] = context
+                # answer_dict['event_' + str(count)] = {}
+                # answer_dict['event_' + str(count)]['time'] = result['_source']['local_time']
+                # answer_dict['event_' + str(count)]['city'] = result['_source']['city']
+                # answer_dict['event_' + str(count)]['location'] = result['_source']["new_name"]
+                # answer_dict['event_' + str(count)]['event'] = context
 
-                # Ask chatgpt to answer
-                response = openai.ChatCompletion.create(
-                    model='gpt-3.5-turbo',
-                    messages=[
-                        {'role': 'user',
-                         'content': f"Base on the provided data {answer_dict} in dictionary for with each key is each "
-                                    f"event. Answer this question {query}: "}
-                    ]
-                )
-                answer = response['choices'][0]['message']['content']
-                answer_dict['answer'] = answer
+                datetime = result['_source']['local_time']
+                city = result['_source']['city']
+                semantic_name = result['_source']["new_name"]
+                retrieved_context += f'{datetime}, {context}, at {semantic_name}, {city} \n'
+
                 count += 1
             else:
                 return ['Unknown question type']
+    if len(retrieved_context) > 0 and question_type == 1:
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                {'role': 'user',
+                 'content': f"Base on the provided data {retrieved_context}. Answer this question {query}: "}
+            ]
+        )
+        answer = response['choices'][0]['message']['content']
+        answer_dict['answer'] = answer
     return answer_aggregation(answer_dict)
 
 
