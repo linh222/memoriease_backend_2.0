@@ -8,7 +8,7 @@ class FeatureModelSingleSearch(BaseModel):
     semantic_name: Optional[str] = Field(..., description='location')
     start_hour: Optional[int] = Field(default=0, description='start hour')
     end_hour: Optional[int] = Field(default=24, description='end hour')
-    is_weekend: Optional[bool] = Field(default=None, description='is on weekend or not')
+    is_weekend: Optional[int] = Field(default=None, description='is on weekend or not')
 
     class Config:
         orm_mode = True
