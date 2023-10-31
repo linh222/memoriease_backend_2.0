@@ -6,9 +6,9 @@ class FeatureModelSingleSearch(BaseModel):
     query: str = Field(..., description="concept query that user input")
     topic: Optional[str] = Field(..., description='topic id')
     semantic_name: Optional[str] = Field(..., description='location')
-    start_hour: Optional[int] = Field(..., description='start hour')
-    end_hour: Optional[int] = Field(..., description='end hour')
-    is_weekend: Optional[int] = Field(..., description='is on weekend or not')
+    start_hour: Optional[int] = Field(default=0, description='start hour')
+    end_hour: Optional[int] = Field(default=24, description='end hour')
+    is_weekend: Optional[int] = Field(default=None, description='is on weekend or not')
 
     class Config:
         orm_mode = True
