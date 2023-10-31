@@ -46,7 +46,7 @@ cd folder/to/elasticsearch
 # Ingest data
 cd memoriease_backend_2.0
 python app/download_nltk.py
-python app/ingest_data_no_segmentation.py
+python app/ingest_data_lsc20_lsc23.py
 ```
 
 ## Endpoints
@@ -92,4 +92,3 @@ Run the fastapi in local
 ```./local_server.sh```
 
 Access to http://localhost:8080/docs to test the endpoints.
-
