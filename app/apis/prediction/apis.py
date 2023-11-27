@@ -29,9 +29,9 @@ def initialize_resources():
     model, vis_processors, txt_processor = load_model_and_preprocess(
         name="blip2_feature_extractor", model_type="coco", is_eval=True, device=device
     )
-    instruct_model, instruct_vis_processor, instruct_txt_processor = load_model_and_preprocess(
-        name="blip2_t5_instruct", model_type="flant5xl", is_eval=True, device=device
-    )
+    # instruct_model, instruct_vis_processor, instruct_txt_processor = load_model_and_preprocess(
+    #     name="blip2_t5_instruct", model_type="flant5xl", is_eval=True, device=device
+    # )
 
     print('Loading 2 models successfully at ', device)
 
@@ -86,26 +86,26 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
     return results
 
 
-@router.post(
-    "/question_answering",
-    status_code=status.HTTP_200_OK,
-)
-async def question_answering(feature: FeatureModelSingleSearch, api_key: APIKey = Depends(get_api_key)):
-    # Question answering endpoint, give the question and some filters if possible
-    # Output: dictionary with key: question.
-    query = feature.query
-    topic = feature.topic
-    semantic_name = feature.semantic_name
-    start_hour = feature.start_hour
-    end_hour = feature.end_hour
-    is_weekend = feature.is_weekend
+# @router.post(
+#     "/question_answering",
+#     status_code=status.HTTP_200_OK,
+# )
+# async def question_answering(feature: FeatureModelSingleSearch, api_key: APIKey = Depends(get_api_key)):
+#     # Question answering endpoint, give the question and some filters if possible
+#     # Output: dictionary with key: question.
+#     query = feature.query
+#     topic = feature.topic
+#     semantic_name = feature.semantic_name
+#     start_hour = feature.start_hour
+#     end_hour = feature.end_hour
+#     is_weekend = feature.is_weekend
 
-    answer = process_result(query=query, blip2_embed_model=model, blip2_txt_processor=txt_processor,
-                            instruct_model=instruct_model, instruct_vis_processor=instruct_vis_processor,
-                            device=device, semantic_name=semantic_name, start_hour=start_hour,
-                            end_hour=end_hour, is_weekend=is_weekend)
+#     answer = process_result(query=query, blip2_embed_model=model, blip2_txt_processor=txt_processor,
+#                             instruct_model=instruct_model, instruct_vis_processor=instruct_vis_processor,
+#                             device=device, semantic_name=semantic_name, start_hour=start_hour,
+#                             end_hour=end_hour, is_weekend=is_weekend)
 
-    return {"answer": answer}
+#     return {"answer": answer}
 
 
 def include_router(app):
