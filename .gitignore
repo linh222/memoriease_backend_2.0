@@ -9,3 +9,6 @@
 .idea
 /app/predictions/mysceal_nlp_utils/__pycache__
 /app/.DS_Store
+*.ipynb
+*/.ipynb_checkpoints
+.ipynb_checkpoints
