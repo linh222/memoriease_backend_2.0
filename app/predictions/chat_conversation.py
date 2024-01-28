@@ -1,5 +1,5 @@
 # TODO Develop a function to chat
-from autofilter_construction import construct_filter, retrieve_result
+from app.predictions.autofilter_construction import construct_filter, retrieve_result
 from openai import OpenAI
 import openai
 from dotenv import load_dotenv
