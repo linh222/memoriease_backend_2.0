@@ -157,6 +157,7 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         # Perform first time search
         filters, main_event, previous_event, after_event = construct_filter(query)
         filters = process_filters(filters)
+        print(filters, main_event, previous_event, after_event)
         result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
                                  after_event_context=after_event,
                                  filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
@@ -183,6 +184,7 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         # Step 2: Perform query extractor
         filters, main_event, previous_event, after_event = construct_filter(retrieving_query)
         filters = process_filters(filters)
+        print(filters, main_event, previous_event, after_event)
         result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
                                  after_event_context=after_event,
                                  filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
