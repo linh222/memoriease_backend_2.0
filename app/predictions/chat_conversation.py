@@ -161,6 +161,7 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
                                  after_event_context=after_event,
                                  filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
+        print(result)
         return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
                         'your query to make it more specifically.'
         if result is not None:
@@ -189,6 +190,7 @@ def chat(query: str, previous_chat: list, model, txt_processors):
                                  after_event_context=after_event,
                                  filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
         # Step 3: Ask for response
+        print(result)
         return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
                         'your query to make it more specifically.'
         if result is not None:
