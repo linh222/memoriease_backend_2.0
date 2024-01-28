@@ -134,25 +134,25 @@ def retrieve_result(main_event_context: str, previous_event_context: str, after_
         ValueError("The query should not be blank.")
 
     # examine the filters
-    new_filters = []
-    for each_filter in filters:
-        if 'time_period' in each_filter[list(each_filter.keys())[0]]:
-            if each_filter['term']['time_period'] in predefined_time_period and \
-                    each_filter['term']['time_period'] != '':
-                new_filters.append(each_filter)
-        elif 'day_of_week' in each_filter[list(each_filter.keys())[0]]:
-            if each_filter['term']['day_of_week'] in predefined_day_of_week and \
-                    each_filter['term']['day_of_week'] != '':
-                new_filters.append(each_filter)
-        elif 'city' in each_filter[list(each_filter.keys())[0]]:
-            if each_filter['term']['city'] in predefined_city and each_filter['term']['city'] != '':
-                new_filters.append(each_filter)
-        else:
-            new_filters.append(each_filter)
+    # new_filters = []
+    # for each_filter in filters:
+    #     if 'time_period' in each_filter[list(each_filter.keys())[0]]:
+    #         if each_filter['term']['time_period'] in predefined_time_period and \
+    #                 each_filter['term']['time_period'] != '':
+    #             new_filters.append(each_filter)
+    #     elif 'day_of_week' in each_filter[list(each_filter.keys())[0]]:
+    #         if each_filter['term']['day_of_week'] in predefined_day_of_week and \
+    #                 each_filter['term']['day_of_week'] != '':
+    #             new_filters.append(each_filter)
+    #     elif 'city' in each_filter[list(each_filter.keys())[0]]:
+    #         if each_filter['term']['city'] in predefined_city and each_filter['term']['city'] != '':
+    #             new_filters.append(each_filter)
+    #     else:
+    #         new_filters.append(each_filter)
 
     # Construct body request
     text_embedding = extract_query_blip_embedding(main_event_context, embed_model, txt_processor)
-    query_template = build_query_template(filter=new_filters, text_embedding=text_embedding, size=size)
+    query_template = build_query_template(filter=filters, text_embedding=text_embedding, size=size)
     query_template = json.dumps(query_template)
     results = send_request_to_elasticsearch(HOST, INDICES, query_template)
 
@@ -202,25 +202,25 @@ def retrieve_result(main_event_context: str, previous_event_context: str, after_
     else:
         return results
 
-#
-# if __name__ == "__main__":
-#     import time
-#
-#     import torch
-#     from LAVIS.lavis.models import load_model_and_preprocess
-#     from app.config import root_path
-#
-#     start_time = time.time()
-#     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
-#     model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
-#                                                                       model_type="coco", is_eval=True,
-#                                                                       device=device)
-#     print("cuda" if torch.cuda.is_available() else "cpu")
-#     print(time.time() - start_time, 'seconds')
-#     filter, main_event, previous_event, after_event = construct_filter('I am at home in the afternoon of 20th '
-#                                                                        'January 2019 in Dublin')
-#
-#     result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
-#                              after_event_context=after_event,
-#                              filters=filter, embed_model=1, txt_processor=1, size=100)
-#     print(result)
+
+if __name__ == "__main__":
+    import time
+
+    import torch
+    from LAVIS.lavis.models import load_model_and_preprocess
+    from app.config import root_path
+
+    start_time = time.time()
+    device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
+    model, vis_processors, txt_processors = load_model_and_preprocess(name="blip2_feature_extractor",
+                                                                      model_type="coco", is_eval=True,
+                                                                      device=device)
+    print("cuda" if torch.cuda.is_available() else "cpu")
+    print(time.time() - start_time, 'seconds')
+    filter, main_event, previous_event, after_event = construct_filter('I am at home in the afternoon of 20th '
+                                                                       'January 2019 in Dublin')
+
+    result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
+                             after_event_context=after_event,
+                             filters=filter, embed_model=1, txt_processor=1, size=100)
+    print(result)

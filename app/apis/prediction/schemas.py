@@ -31,3 +31,15 @@ class FeatureModelTemporalSearch(BaseModel):
         return f"{self.query}," \
                f"{self.previous_event}, {self.next_event}, " \
                f"{self.time_gap}, {self.semantic_name}"
+
+
+class FeatureModelConversationalSearch(BaseModel):
+    query: str = Field(..., description="concept query that user input")
+    previous_chat: list = Field(..., description="list of previous chat")
+
+    class Config:
+        orm_mode = True
+
+    def __str__(self):
+        return f"{self.query}," \
+               f"{self.previous_chat}"
