@@ -110,10 +110,10 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
 #     return {"answer": answer}
 
 @router.post(
-    "/chat",
+    "/conversational_search",
     status_code=status.HTTP_200_OK,
 )
-async def chat(feature: FeatureModelConversationalSearch, api_key: APIKey = Depends(get_api_key)):
+async def conversation_search(feature: FeatureModelConversationalSearch, api_key: APIKey = Depends(get_api_key)):
     # Chat to retrieve images
     # Input: query, previous chat of users
     # Output: the list of results and textual answer
