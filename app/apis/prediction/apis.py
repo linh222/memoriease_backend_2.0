@@ -8,12 +8,14 @@ from app.api_key import get_api_key
 from app.apis.api_utils import add_image_link, RequestTimestampMiddleware
 from app.config import HOST
 from app.predictions.predict import retrieve_image
+from app.predictions.chat_conversation import chat
 from app.predictions.question_answering import process_result
 from app.predictions.temporal_predict import temporal_search
 from app.predictions.utils import automatic_logging
 from .schemas import (
     FeatureModelSingleSearch,
-    FeatureModelTemporalSearch
+    FeatureModelTemporalSearch,
+    FeatureModelConversationalSearch
 )
 
 router = APIRouter()
@@ -106,6 +108,20 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
 #                             end_hour=end_hour, is_weekend=is_weekend)
 
 #     return {"answer": answer}
+
+@router.post(
+    "/conversational_search",
+    status_code=status.HTTP_200_OK,
+)
+async def conversation_search(feature: FeatureModelConversationalSearch, api_key: APIKey = Depends(get_api_key)):
+    # Chat to retrieve images
+    # Input: query, previous chat of users
+    # Output: the list of results and textual answer
+    query = feature.query
+    previous_chat = feature.previous_chat
+    result, return_answer = chat(query=query, previous_chat=previous_chat, model=model, txt_processors=txt_processor)
+    output_dict = {'results': result, 'textual_answer': return_answer}
+    return output_dict
 
 
 def include_router(app):
