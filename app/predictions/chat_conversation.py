@@ -10,25 +10,6 @@ load_dotenv(str(root_path) + '/.env')
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def process_filters(filters):
-    # process the filters to remove any invalid values in filter
-
-    list_valid_term = ['time_period', 'day_of_week', 'city']
-    for filter in filters:
-        if 'term' in filter:
-            if list(filter['term'].keys())[0] not in list_valid_term:
-                filters.remove(filter)
-        if 'range' in filter:
-            if filter['range']['local_time']['gte'] == '':
-                filter['range']['local_time']['gte'] = '2019-01-01'
-            if filter['range']['local_time']['lte'] == '':
-                filter['range']['local_time']['lte'] = '2020-06-30'
-        if 'term' in filter:
-            if 'city' in filter['term']:
-                filter['term']['city'] = filter['term']['city'].lower()
-    return filters
-
-
 def textual_answer(query):
     client = OpenAI()
 
@@ -156,12 +137,9 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         # print('First round search')
         # Perform first time search
         filters, main_event, previous_event, after_event = construct_filter(query)
-        filters = process_filters(filters)
-        print(filters, main_event, previous_event, after_event)
         result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
                                  after_event_context=after_event,
                                  filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
-        print(result)
         return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
                         'your query to make it more specifically.'
         if result is not None:
@@ -173,7 +151,6 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         # Step 1: if the current query and previous query are in the same topic -> create a united query
         #         Else: Act as first time request
         print('Multi round search')
-        retrieving_query = ''
         formatted_previous_chat = formulate_previous_chat(previous_chat)
         response_verify_query = chatgpt_verify_query(previous_query=formatted_previous_chat, current_query=query)
         response_verify_query = eval(response_verify_query.choices[0].message.content)
@@ -184,13 +161,10 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         # print(response_verify_query)
         # Step 2: Perform query extractor
         filters, main_event, previous_event, after_event = construct_filter(retrieving_query)
-        filters = process_filters(filters)
-        print(filters, main_event, previous_event, after_event)
         result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
                                  after_event_context=after_event,
                                  filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
         # Step 3: Ask for response
-        print(result)
         return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
                         'your query to make it more specifically.'
         if result is not None:

@@ -127,6 +127,28 @@ def construct_filter(query):
     return new_filters, main_event_context, previous_event_context, after_event_context
 
 
+def process_filters(filters):
+    # process the filters to remove any invalid values in filter
+    list_valid_term = ['time_period', 'day_of_week', 'city']
+    new_filters = []
+    for filter in filters:
+
+        if 'term' in filter.keys():
+            if list(filter['term'].keys())[0] not in list_valid_term or filter['term'][
+                list(filter['term'].keys())[0]] == '':
+                pass
+            else:
+                filter['term'][list(filter['term'].keys())[0]] = filter['term'][list(filter['term'].keys())[0]].lower()
+                new_filters.append(filter)
+        if 'range' in filter:
+            if filter['range']['local_time']['gte'] == '':
+                filter['range']['local_time']['gte'] = '2019-01-01'
+            if filter['range']['local_time']['lte'] == '':
+                filter['range']['local_time']['lte'] = '2020-06-30'
+            new_filters.append(filter)
+    return new_filters
+
+
 def retrieve_result(main_event_context: str, previous_event_context: str, after_event_context: str, filters: list,
                     embed_model, txt_processor, size=100):
     # Retrieve the data from the constructed filters
@@ -134,21 +156,7 @@ def retrieve_result(main_event_context: str, previous_event_context: str, after_
         ValueError("The query should not be blank.")
 
     # examine the filters
-    # new_filters = []
-    # for each_filter in filters:
-    #     if 'time_period' in each_filter[list(each_filter.keys())[0]]:
-    #         if each_filter['term']['time_period'] in predefined_time_period and \
-    #                 each_filter['term']['time_period'] != '':
-    #             new_filters.append(each_filter)
-    #     elif 'day_of_week' in each_filter[list(each_filter.keys())[0]]:
-    #         if each_filter['term']['day_of_week'] in predefined_day_of_week and \
-    #                 each_filter['term']['day_of_week'] != '':
-    #             new_filters.append(each_filter)
-    #     elif 'city' in each_filter[list(each_filter.keys())[0]]:
-    #         if each_filter['term']['city'] in predefined_city and each_filter['term']['city'] != '':
-    #             new_filters.append(each_filter)
-    #     else:
-    #         new_filters.append(each_filter)
+    filters = process_filters(filters)
 
     # Construct body request
     text_embedding = extract_query_blip_embedding(main_event_context, embed_model, txt_processor)
