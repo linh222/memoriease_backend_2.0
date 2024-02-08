@@ -135,7 +135,7 @@ def chat(query: str, previous_chat: list, model, txt_processors):
     # Input:
     #   Query: The current query from users
     #   Previous chat: the previous queries from users
-    logging.info(f'Received query {query} with previous chat {previous_chat}')
+    logging.info(f'Received query {query}, with previous chat: {previous_chat}')
     if query == '':
         raise ValueError('Empty string')
     if len(previous_chat) == 0:
