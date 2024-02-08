@@ -3,9 +3,13 @@ from app.predictions.autofilter_construction import construct_filter, retrieve_r
 from openai import OpenAI
 import openai
 from dotenv import load_dotenv
-from app.config import root_path, HOST, INDICES
+from app.config import root_path
 import os
+import logging
 
+
+logging.basicConfig(filename='conversational_search_logs.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 load_dotenv(str(root_path) + '/.env')
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -131,12 +135,15 @@ def chat(query: str, previous_chat: list, model, txt_processors):
     # Input:
     #   Query: The current query from users
     #   Previous chat: the previous queries from users
+    logging.info(f'Received query {query}, with previous chat: {previous_chat}')
     if query == '':
         raise ValueError('Empty string')
     if len(previous_chat) == 0:
-        # print('First round search')
+        logging.info('First round search')
         # Perform first time search
         filters, main_event, previous_event, after_event = construct_filter(query)
+        logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
+                     f' previous_event: {previous_event}, after_event: {after_event}')
         result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
                                  after_event_context=after_event,
                                  filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
@@ -145,12 +152,13 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         if result is not None:
             if len(result) > 0:
                 return_answer = textual_answer(query)
+        logging.info(f'Answer: {return_answer}')
     else:
 
         # perform search after several rounds
         # Step 1: if the current query and previous query are in the same topic -> create a united query
         #         Else: Act as first time request
-        print('Multi round search')
+        logging.info('Multi round search')
         formatted_previous_chat = formulate_previous_chat(previous_chat)
         response_verify_query = chatgpt_verify_query(previous_query=formatted_previous_chat, current_query=query)
         response_verify_query = eval(response_verify_query.choices[0].message.content)
@@ -161,6 +169,8 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         # print(response_verify_query)
         # Step 2: Perform query extractor
         filters, main_event, previous_event, after_event = construct_filter(retrieving_query)
+        logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
+                     f' previous_event: {previous_event}, after_event: {after_event}')
         result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
                                  after_event_context=after_event,
                                  filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
@@ -170,5 +180,5 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         if result is not None:
             if len(result) > 0:
                 return_answer = textual_answer(retrieving_query)
-
+        logging.info(f'Answer: {return_answer}')
     return result, return_answer
