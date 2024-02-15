@@ -100,7 +100,9 @@ def send_gpt_request(query):
         frequency_penalty=0,
         presence_penalty=0
     )
-    return response.choices[0].message.content
+    response = response.choices[0].message.content
+    response = response.replace("I'm", "I am")
+    return response
 
 
 def construct_filter(query):
