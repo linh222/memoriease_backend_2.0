@@ -1,4 +1,3 @@
-# TODO Develop a function to chat
 from app.predictions.autofilter_construction import construct_filter, retrieve_result
 from openai import OpenAI
 import openai
@@ -6,7 +5,6 @@ from dotenv import load_dotenv
 from app.config import root_path
 import os
 import logging
-
 
 logging.basicConfig(filename='conversational_search_logs.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -138,6 +136,10 @@ def chat(query: str, previous_chat: list, model, txt_processors):
     logging.info(f'Received query {query}, with previous chat: {previous_chat}')
     if query == '':
         raise ValueError('Empty string')
+    elif len(previous_chat) > 0 and 'Find' not in query and 'images' not in query:
+        query += 'Find all images when '
+    else:
+        pass
     if len(previous_chat) == 0:
         logging.info('First round search')
         # Perform first time search
