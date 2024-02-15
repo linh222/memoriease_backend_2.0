@@ -102,7 +102,17 @@ def send_gpt_request(query):
     )
     response = response.choices[0].message.content
     response = response.replace("I'm", "I am")
-    return response
+    try:
+        return eval(response)
+    except:
+        sample_result = [{'term': {'concept': ''}},
+                         {'term': {'after_concept': ''}},
+                         {'term': {'before_concept': ''}},
+                         {'term': {'time_period': ''}},
+                         {'term': {'day_of_week': ''}},
+                         {'range': {'local_time': {'gte': '', 'lte': ''}}},
+                         {'term': {'city': ''}}]
+        return sample_result
 
 
 def construct_filter(query):
@@ -110,7 +120,9 @@ def construct_filter(query):
     # Input: The query
     # Output: The elasticsearch query template with KNN retrieval and filters
     main_event_context, previous_event_context, after_event_context = '', '', ''
-    filters = eval(send_gpt_request(query)) # Convert to dictionary
+    filters = send_gpt_request(query) # Convert to dictionary
+    if filters[0]['term']['concept'] == '':
+        raise ValueError("Invalid query, please refine the query")
     new_filters = []
     for each_filter in filters:
         if 'concept' in each_filter[list(each_filter.keys())[0]]:
