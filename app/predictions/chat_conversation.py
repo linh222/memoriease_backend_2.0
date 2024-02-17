@@ -150,7 +150,7 @@ def chat(query: str, previous_chat: list, model, txt_processors):
                                 start_hour="", end_hour="", is_weekend="", size=100)
         result = [{'current_event': each_result} for each_result in result['hits']['hits']]
         # add image link
-        results = add_image_link(result)
+        result = add_image_link(result)
         # logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
         #              f' previous_event: {previous_event}, after_event: {after_event}')
         # result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
@@ -177,12 +177,17 @@ def chat(query: str, previous_chat: list, model, txt_processors):
             retrieving_query = query
         # print(response_verify_query)
         # Step 2: Perform query extractor
-        filters, main_event, previous_event, after_event = construct_filter(retrieving_query)
-        logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
-                     f' previous_event: {previous_event}, after_event: {after_event}')
-        result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
-                                 after_event_context=after_event,
-                                 filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
+        # filters, main_event, previous_event, after_event = construct_filter(retrieving_query)
+        # logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
+        #              f' previous_event: {previous_event}, after_event: {after_event}')
+        # result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
+        #                          after_event_context=after_event,
+        #                          filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
+        result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, semantic_name="",
+                                start_hour="", end_hour="", is_weekend="", size=100)
+        result = [{'current_event': each_result} for each_result in result['hits']['hits']]
+        # add image link
+        result = add_image_link(result)
         # Step 3: Ask for response
         return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
                         'your query to make it more specifically.'
