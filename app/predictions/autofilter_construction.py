@@ -39,54 +39,23 @@ def send_gpt_request(query):
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful query extractor to extract relevant information from a query to form a "
-                           "json file to query in elastic search. The set of valid values for time_perios is ["
-                           "'morning', 'afternoon', 'night', 'late night', 'early morning'] and for day_of_week is ["
-                           "'monday', 'tuesday', 'webnesday', 'thursday', 'friday', 'saturday', 'sunday'] and city is "
-                           "only the name of the city\nHere are some examples of the task:\nPrompt examples for "
-                           "filter construction.\nExtract the information from query to the result as follow: "
-                           "\nQuery: Having lunch with Dermot, who was a guest speaker at my lecture. After lunch, "
-                           "he gave a lecture to my class about Lessons in Innovation & Entrepreneurship while I was "
-                           "sitting in the front row. It was in November 2019.\nResult: [{'term': {'concept': 'Having "
-                           "lunch with Dermot, who was a guest speaker at my lecture'}}, {'term': {'after_concept': "
-                           "'After lunch, he gave a lecture to my class about Lessons in Innovation & "
-                           "Entrepreneurship in Dublin City University while I was sitting in the front row.'}},"
-                           "{'term': {'before_concept':''}},{'term': {'time_period': 'afternoon'}}, {'term': {"
-                           "'day_of_week': ''}}, {'range': {'local_time': {'gte': '2019-11-01',"
-                           "\n'lte': '2019-11-30'}}}, {'term': {'city': 'dublin'}}]\nQuery: When did I buy that model "
-                           "train? I remember it was a marklin brand train and I bought it at the weekend. Jer "
-                           "convinced me to buy it when having coffee and I bought it immediately after coffee. It "
-                           "was in June 2019.\nResult: [{'term': {'concept': 'When did I buy that model train? I "
-                           "remember it was a marklin brand train'}}, {'term': {'after_concept': ''}}, "
-                           "{'term': {'before_concept': 'Jer convinced me to buy it when having coffee'}}, "
-                           "{'term': {'time_period': ''}}, {'term': {'day_of_week': ''}}, {'range': {'local_time': {"
-                           "'gte': '2019-06-01', 'lte': '2019-06-30'}}}, {'term': {'city': ''}}]\nQuery: I remember a "
-                           "man in a blue coat walking a dog in the countryside in Ireland on a sunny afternoon in "
-                           "December on Christmas Day.\nResult: [{'term': {'concept': 'a man in a blue coat walking a "
-                           "dog in the countryside on a sunny afternoon'}}, {'term': {'after_concept': ''}},"
-                           "\n{'term': {'before_concept': ''}}, {'term': {'time_period': 'afternoon'}}, "
-                           "{'term': {'day_of_week': ''}},\n{'range': {'local_time': {'gte': '2019-12-25', "
-                           "'lte': '2019-12-25'}}}, {'term': {'city': 'Ireland'}}]\nQuery: I remember that there was "
-                           "a man in a pink t-shirt in front of a wall looking at the water.\nResult: [{'term': {"
-                           "'concept': 'there was a man in a pink t-shirt in front of a wall looking at the "
-                           "water.'}},\n{'term': {'after_concept': ''}}, {'term': {'before_concept': ''}}, "
-                           "{'term': {'time_period': ''}}, {'term': {'day_of_week': ''}},\n{'range': {'local_time': {"
-                           "'gte': '2019-01-01', 'lte': '2020-06-30'}}}, {'term': {'city': ''}}]\nQuery: Damn it, "
-                           "my car has a flat tyre. What was the name of the car service/repair company that I used "
-                           "in the summer of 2019? I want to call them to get my car fixed.\nResult: [{'term': {"
-                           "'concept': 'Damn it, my car has a flat tyre. The name of the car service/repair company "
-                           "that I used to get my car fixed.'}},\n{'term': {'after_concept': ''}}, {'term': {"
-                           "'before_concept': ''}}, {'term': {'time_period': 'morning'}}, {'term': {'day_of_week': "
-                           "''}},\n{'range': {'local_time': {'gte': '2019-04-01', 'lte': '2019-08-31'}}}, "
-                           "{'term': {'city': ''}}]\nQuery: I was getting an eye test after looking for a new pair of "
-                           "glasses. I remember the optician had a red sweater with a reindeer on it and that I had "
-                           "to look into some machines. After the eye test, I went shopping for groceries. It was a "
-                           "few days before Christmas.\nResult: [{'term': {'concept': 'I was getting an eye test. I "
-                           "remember the optician had a red sweater with a reindeer on it and that I had to look into "
-                           "some machines'}}, {'term': {'after_concept': 'Shopping for groceries'}}, "
-                           "{'term': {'before_concept': 'looking for a new pair of glasses'}}, {'term': {"
-                           "'time_period': ''}}, {'term': {'day_of_week': ''}},\n{'range': {'local_time': {'gte': "
-                           "'2019-12-15', 'lte': '2019-12-24'}}}, {'term': {'city': ''}}]"
+                "content": """You are a helpful query extractor to extract relevant information from a query to form a json file to query in elastic search. The set of valid values for time_perios is ['morning', 'afternoon', 'night', 'late night', 'early morning'] and for day_of_week is ['monday', 'tuesday', 'webnesday', 'thursday', 'friday', 'saturday', 'sunday'] and city is only the name of the city. 
+                Here are some examples of the task, follow strictly the examples to produce the result:
+                Query: Having lunch with Dermot, who was a guest speaker at my lecture. After lunch, he gave a lecture to my class about Lessons in Innovation & Entrepreneurship while I was sitting in the front row. It was in November 2019.
+                Result: [{'term': {'concept': 'Having lunch with Dermot, who was a guest speaker at my lecture'}}, {'term': {'after_concept': 'After lunch, he gave a lecture to my class about Lessons in Innovation & Entrepreneurship in Dublin City University while I was sitting in the front row.'}},{'term': {'before_concept':''}},{'term': {'time_period': 'afternoon'}}, {'term': {'day_of_week': ''}}, {'range': {'local_time': {'gte': '2019-11-01', 'lte': '2019-11-30'}}}, {'term': {'city': 'dublin'}}]
+                Query: I was getting an eye test after looking for a new pair of glasses. I remember the optician had a red sweater with a reindeer on it and that I had to look into some machines. After the eye test, I went shopping for groceries. It was a few days before Christmas.
+                Result: [{'term': {'concept': 'I was getting an eye test. I remember the optician had a red sweater with a reindeer on it and that I had to look into some machines'}}, {'term': {'after_concept': 'Shopping for groceries'}}, {'term': {'before_concept': 'looking for a new pair of glasses'}}, {'term': {'time_period': ''}}, {'term': {'day_of_week': ''}}, {'range': {'local_time': {'gte': '2019-12-15', 'lte': '2019-12-24'}}}, {'term': {'city': ''}}]
+                Query: When did I buy that model train? I remember it was a marklin brand train and I bought it at the weekend. Jer convinced me to buy it when having coffee and I bought it immediately after coffee. It was in June 2019.
+                Result: [{'term': {'concept': 'When did I buy that model train? I remember it was a marklin brand train'}}, {'term': {'after_concept': ''}}, {'term':{'before_concept': 'Jer convinced me to buy it when having coffee'}}, {'term': {'time_period': ''}}, {'term': {'day_of_week': ''}}, {'range': {'local_time': {'gte': '2019-06-01', 'lte': '2019-06-30'}}}, {'term': {'city': ''}}]
+                Query: I remember a man in a blue coat walking a dog in the countryside in Ireland on a sunny afternoon in December on Christmas Day.
+                Result: [{'term': {'concept': 'a man in a blue coat walking a dog in the countryside on a sunny afternoon'}}, {'term': {'after_concept': ''}}, {'term': {'before_concept': ''}}, {'term': {'time_period': 'afternoon'}}, {'term': {'day_of_week': ''}}, {'range': {'local_time': {'gte': '2019-12-25', 'lte': '2019-12-25'}}}, {'term': {'city': 'Ireland'}}]
+                Query: I remember that there was a man in a pink t-shirt in front of a wall looking at the water. Result: [{'term': {'concept': 'there was a man in a pink t-shirt in front of a wall looking at the water.'}}, 'term': {'after_concept': ''}}, {'term': {'before_concept': ''}}, {'term': {'time_period': ''}}, {'term': {'day_of_week': ''}}, {'range': {'local_time': {'gte': '2019-01-01', 'lte': '2020-06-30'}}}, {'term': {'city': ''}}]
+                Query: Find all images when I was eating avocado for breakfast
+                Result: [{'term': {'concept': 'I was eating avocado for breakfast'}}, {'term': {'after_concept': ''}}, {'term': {'before_concept': ''}}, {'term': {'time_period': 'morning'}}, {'term': {'day_of_week': ''}}, {'range': {'local_time': {'gte': '2019-01-01', 'lte': '2020-06-30'}}}, {'term': {'city': ''}}]
+                Query: Damn it, my car has a flat tyre. What was the name of the car service/repair company that I used in the summer of 2019? I want to call them to get my car fixed.
+                Result: [{'term': {'concept': 'Damn it, my car has a flat tyre. The name of the car service/repair company that I used to get my car fixed.'}},
+                {'term': {'after_concept': ''}}, {'term': {'before_concept': ''}}, {'term': {'time_period': 'morning'}}, {'term': {'day_of_week': ''}}, {'range': {'local_time': {'gte': '2019-04-01', 'lte': '2019-08-31'}}}, {'term': {'city': ''}}]
+                """
             },
             {
                 "role": "user",
