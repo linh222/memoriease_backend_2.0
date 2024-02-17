@@ -1,5 +1,6 @@
 from app.predictions.autofilter_construction import construct_filter, retrieve_result
 from app.predictions.predict import retrieve_image
+from app.apis.api_utils import add_image_link
 from openai import OpenAI
 import openai
 from dotenv import load_dotenv
@@ -147,6 +148,9 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         # filters, main_event, previous_event, after_event = construct_filter(query)
         result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, semantic_name="",
                                 start_hour="", end_hour="", is_weekend="", size=100)
+        result = [{'current_event': each_result} for each_result in result['hits']['hits']]
+        # add image link
+        results = add_image_link(result)
         # logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
         #              f' previous_event: {previous_event}, after_event: {after_event}')
         # result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
