@@ -142,57 +142,68 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         query += 'Find all images when '
     else:
         pass
-    if len(previous_chat) == 0:
-        logging.info('First round search')
-        # Perform first time search
-        # filters, main_event, previous_event, after_event = construct_filter(query)
-        result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, semantic_name="",
-                                start_hour="", end_hour="", is_weekend="", size=100)
-        result = [{'current_event': each_result} for each_result in result['hits']['hits']]
-        # add image link
-        result = add_image_link(result)
-        # logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
-        #              f' previous_event: {previous_event}, after_event: {after_event}')
-        # result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
-        #                          after_event_context=after_event,
-        #                          filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
-        return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
-                        'your query to make it more specifically.'
-        if result is not None:
-            if len(result) > 0:
-                return_answer = textual_answer(query)
-        logging.info(f'Answer: {return_answer}')
-    else:
+    # if len(previous_chat) == 0:
+    #     logging.info('First round search')
+    #     # Perform first time search
+    #     result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, semantic_name="",
+    #                             start_hour="", end_hour="", is_weekend="", size=100)
+    #     result = [{'current_event': each_result} for each_result in result['hits']['hits']]
+    #     # add image link
+    #     result = add_image_link(result)
+    #
+    #     return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
+    #                     'your query to make it more specifically.'
+    #     if result is not None:
+    #         if len(result) > 0:
+    #             return_answer = textual_answer(query)
+    #     logging.info(f'Answer: {return_answer}')
+    # else:
+    #
+    #     # perform search after several rounds
+    #     # Step 1: if the current query and previous query are in the same topic -> create a united query
+    #     #         Else: Act as first time request
+    #     logging.info('Multi round search')
+    #     formatted_previous_chat = formulate_previous_chat(previous_chat)
+    #     response_verify_query = chatgpt_verify_query(previous_query=formatted_previous_chat, current_query=query)
+    #     response_verify_query = eval(response_verify_query.choices[0].message.content)
+    #     if response_verify_query['same_topic']:
+    #         retrieving_query = response_verify_query['query']
+    #     else:
+    #         retrieving_query = query
+    #
+    #     result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, semantic_name="",
+    #                             start_hour="", end_hour="", is_weekend="", size=100)
+    #     result = [{'current_event': each_result} for each_result in result['hits']['hits']]
+    #     # add image link
+    #     result = add_image_link(result)
+    #     # Step 3: Ask for response
+    #     return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
+    #                     'your query to make it more specifically.'
+    #     if result is not None:
+    #         if len(result) > 0:
+    #             return_answer = textual_answer(retrieving_query)
+    #     logging.info(f'Answer: {return_answer}')
 
-        # perform search after several rounds
-        # Step 1: if the current query and previous query are in the same topic -> create a united query
-        #         Else: Act as first time request
+    retrieving_query = query
+    if len(previous_chat) > 0:
         logging.info('Multi round search')
         formatted_previous_chat = formulate_previous_chat(previous_chat)
         response_verify_query = chatgpt_verify_query(previous_query=formatted_previous_chat, current_query=query)
         response_verify_query = eval(response_verify_query.choices[0].message.content)
         if response_verify_query['same_topic']:
             retrieving_query = response_verify_query['query']
-        else:
-            retrieving_query = query
-        # print(response_verify_query)
-        # Step 2: Perform query extractor
-        # filters, main_event, previous_event, after_event = construct_filter(retrieving_query)
-        # logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
-        #              f' previous_event: {previous_event}, after_event: {after_event}')
-        # result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
-        #                          after_event_context=after_event,
-        #                          filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
-        result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, semantic_name="",
-                                start_hour="", end_hour="", is_weekend="", size=100)
-        result = [{'current_event': each_result} for each_result in result['hits']['hits']]
-        # add image link
-        result = add_image_link(result)
-        # Step 3: Ask for response
-        return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
-                        'your query to make it more specifically.'
-        if result is not None:
-            if len(result) > 0:
-                return_answer = textual_answer(retrieving_query)
-        logging.info(f'Answer: {return_answer}')
+
+    result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, semantic_name="",
+                            start_hour="", end_hour="", is_weekend="", size=100)
+    result = [{'current_event': each_result} for each_result in result['hits']['hits']]
+    # add image link
+    result = add_image_link(result)
+    # Step 3: Ask for response
+    return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
+                    'your query to make it more specifically.'
+    if result is not None:
+        if len(result) > 0:
+            return_answer = textual_answer(retrieving_query)
+    logging.info(f'Answer: {return_answer}')
+
     return result, return_answer
