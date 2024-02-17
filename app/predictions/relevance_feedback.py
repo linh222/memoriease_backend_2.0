@@ -25,7 +25,7 @@ def calculate_mean_emb(image_id):
     return avg_embed
 
 
-def relevance_image_similar(image_embedding, query, semantic_name, size=100):
+def relevance_image_similar(image_embedding, query, size=100):
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id']
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(query)
     query_dict = {
@@ -33,8 +33,7 @@ def relevance_image_similar(image_embedding, query, semantic_name, size=100):
         'location': location,
         'list_keyword': list_keyword,
         'weekday': weekday,
-        'time_filter': time_filter,
-        'semantic_name': semantic_name if semantic_name is not None else ''
+        'time_filter': time_filter
     }
     filters = construct_filter(query_dict)
     query_template = {
@@ -55,14 +54,11 @@ def relevance_image_similar(image_embedding, query, semantic_name, size=100):
     return results
 
 
-def pseudo_relevance_feedback(concept_query: str, embed_model, txt_processor, semantic_name=None,
-                              start_hour=None, end_hour=None, is_weekend=None, top_k=3):
+def pseudo_relevance_feedback(concept_query: str, embed_model, txt_processor, top_k=3):
     # Retrieve top 3 and assume it as true results to get more similar images to top 3
-    initial_result = retrieve_image(concept_query=concept_query, embed_model=embed_model, txt_processor=txt_processor,
-                                    semantic_name=semantic_name, start_hour=start_hour, end_hour=end_hour,
-                                    is_weekend=is_weekend)
+    initial_result = retrieve_image(concept_query=concept_query, embed_model=embed_model, txt_processor=txt_processor)
     top_k_result = initial_result['hits']['hits'][0:top_k]
     relevant_image_id = [i['_id'][:-4] for i in top_k_result]
     relevant_embedding = calculate_mean_emb(relevant_image_id)
-    result = relevance_image_similar(relevant_embedding, query=concept_query, semantic_name=semantic_name, size=100)
+    result = relevance_image_similar(relevant_embedding, query=concept_query, size=100)
     return result
