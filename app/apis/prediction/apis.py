@@ -52,7 +52,7 @@ async def predict_image_temporal(feature: FeatureModelTemporalSearch, api_key: A
     # Perform search
     results = temporal_search(concept_query=query, embed_model=model, txt_processor=txt_processor,
                               previous_event=feature.previous_event,
-                              next_event=feature.next_event, time_gap=feature.time_gap, semantic_name=semantic_name)
+                              next_event=feature.next_event, time_gap=feature.time_gap)
     results = add_image_link(results)
 
     # Automatic run Logging query string
