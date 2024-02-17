@@ -1,4 +1,5 @@
 from app.predictions.autofilter_construction import construct_filter, retrieve_result
+from app.predictions.predict import retrieve_image
 from openai import OpenAI
 import openai
 from dotenv import load_dotenv
@@ -143,12 +144,14 @@ def chat(query: str, previous_chat: list, model, txt_processors):
     if len(previous_chat) == 0:
         logging.info('First round search')
         # Perform first time search
-        filters, main_event, previous_event, after_event = construct_filter(query)
-        logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
-                     f' previous_event: {previous_event}, after_event: {after_event}')
-        result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
-                                 after_event_context=after_event,
-                                 filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
+        # filters, main_event, previous_event, after_event = construct_filter(query)
+        result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, semantic_name="",
+                                start_hour="", end_hour="", is_weekend="", size=100)
+        # logging.info(f'Extracted information: filters: {filters}, main_event: {main_event},'
+        #              f' previous_event: {previous_event}, after_event: {after_event}')
+        # result = retrieve_result(main_event_context=main_event, previous_event_context=previous_event,
+        #                          after_event_context=after_event,
+        #                          filters=filters, embed_model=model, txt_processor=txt_processors, size=100)
         return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
                         'your query to make it more specifically.'
         if result is not None:
