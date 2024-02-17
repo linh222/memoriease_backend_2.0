@@ -5,8 +5,7 @@ from app.predictions.blip_extractor import extract_query_blip_embedding
 from app.predictions.utils import process_query, construct_filter, build_query_template, send_request_to_elasticsearch
 
 
-def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name="",
-                   start_hour="", end_hour="", is_weekend="", size=100):
+def retrieve_image(concept_query: str, embed_model, txt_processor, size=100):
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(concept_query)
     text_embedding = extract_query_blip_embedding(processed_query, embed_model, txt_processor)
 
@@ -15,11 +14,7 @@ def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name
         "location": location,
         "list_keyword": list_keyword,
         "weekday": weekday,
-        "time_filter": time_filter,
-        "semantic_name": semantic_name if semantic_name is not None else '',
-        "start_hour": start_hour if start_hour is not None else '',
-        "end_hour": end_hour if end_hour is not None else '',
-        "is_weekend": is_weekend if is_weekend is not None else '',
+        "time_filter": time_filter
     }
 
     filters = construct_filter(query_dict)

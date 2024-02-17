@@ -82,7 +82,7 @@ def temporal_search(concept_query, embed_model, txt_processor,
     # Input: query for three type of temporal, filters, timegap
     # Output: Results list of dicts with three keys: current event, previous event, after event
     main_event_result = retrieve_image(concept_query=concept_query, embed_model=embed_model,
-                                       txt_processor=txt_processor, semantic_name=semantic_name)
+                                       txt_processor=txt_processor)
     main_event_result = main_event_result['hits']['hits']
     full_result = []
     list_next_event_query, list_previous_event_query = [], []

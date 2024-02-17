@@ -19,11 +19,10 @@ async def relevance_feedback(feature: FeatureModelRelevanceSearch, api_key: APIK
     # Output: list of dict with key current_event.
     query = feature.query
     image_id = feature.image_id
-    semantic_name = feature.semantic_name
     # Calculate the mean embedding of all image input
     mean_embedding = calculate_mean_emb(image_id=image_id)
     # Perform search by image embedding
-    raw_result = relevance_image_similar(image_embedding=mean_embedding, query=query, semantic_name=semantic_name)
+    raw_result = relevance_image_similar(image_embedding=mean_embedding, query=query)
     results = [{'current_event': result} for result in raw_result['hits']['hits']]
     results = add_image_link(results)
     return results

@@ -76,9 +76,7 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
     is_weekend = feature.is_weekend
 
     # Perform search
-    raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor,
-                                semantic_name=semantic_name, start_hour=start_hour,
-                                end_hour=end_hour, is_weekend=is_weekend)
+    raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor)
     results = [{'current_event': result} for result in raw_result['hits']['hits']]
     results = add_image_link(results)
 

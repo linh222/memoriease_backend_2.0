@@ -58,9 +58,7 @@ def relevance_image_similar(image_embedding, query, semantic_name, size=100):
 def pseudo_relevance_feedback(concept_query: str, embed_model, txt_processor, semantic_name=None,
                               start_hour=None, end_hour=None, is_weekend=None, top_k=3):
     # Retrieve top 3 and assume it as true results to get more similar images to top 3
-    initial_result = retrieve_image(concept_query=concept_query, embed_model=embed_model, txt_processor=txt_processor,
-                                    semantic_name=semantic_name, start_hour=start_hour, end_hour=end_hour,
-                                    is_weekend=is_weekend)
+    initial_result = retrieve_image(concept_query=concept_query, embed_model=embed_model, txt_processor=txt_processor)
     top_k_result = initial_result['hits']['hits'][0:top_k]
     relevant_image_id = [i['_id'][:-4] for i in top_k_result]
     relevant_embedding = calculate_mean_emb(relevant_image_id)

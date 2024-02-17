@@ -100,19 +100,17 @@ def process_question(question_query):
     return context_query_return, question_to_ask_return, question_to_confirm_return
 
 
-def process_result(query, semantic_name, start_hour, end_hour, is_weekend, blip2_embed_model, blip2_txt_processor,
+def process_result(query, blip2_embed_model, blip2_txt_processor,
                    instruct_model, instruct_vis_processor, device):
     context, question, question_confirm = process_question(query)
     question_type = question_classification(query)
     # different return length for different question type, the retriever retrieve results for event
     if question_type == 0:
         retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
-                                           txt_processor=blip2_txt_processor, semantic_name=semantic_name,
-                                           start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=5)
+                                           txt_processor=blip2_txt_processor, size=5)
     else:
         retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
-                                           txt_processor=blip2_txt_processor, semantic_name=semantic_name,
-                                           start_hour=start_hour, end_hour=end_hour, is_weekend=is_weekend, size=30)
+                                           txt_processor=blip2_txt_processor, size=30)
 
     answer_dict = {}
     retrieved_context = ''
