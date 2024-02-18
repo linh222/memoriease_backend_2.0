@@ -8,7 +8,6 @@ app_routers = [
     "app.apis.prediction.apis",
     "app.apis.image_by_day.apis",
     "app.apis.metadata.apis",
-    "app.apis.visual_similarity.apis"
 ]
 
 
