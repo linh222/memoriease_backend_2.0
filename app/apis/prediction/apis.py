@@ -1,22 +1,23 @@
 import torch
-from elasticsearch import Elasticsearch
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import APIKey
 
 from LAVIS.lavis.models import load_model_and_preprocess
 from app.api_key import get_api_key
-from app.apis.api_utils import add_image_link, RequestTimestampMiddleware
-from app.config import HOST
-from app.predictions.predict import retrieve_image
+from app.apis.api_utils import RequestTimestampMiddleware, add_image_link
 from app.predictions.chat_conversation import chat
-from app.predictions.question_answering import process_result
 from app.predictions.temporal_predict import temporal_search
-from app.predictions.utils import automatic_logging
 from .schemas import (
     FeatureModelSingleSearch,
     FeatureModelTemporalSearch,
-    FeatureModelConversationalSearch
+    FeatureModelConversationalSearch,
+    FeatureModelVisualSimilarity
 )
+import json
+from app.config import HOST, INDICES
+from app.predictions.visual_similarity import relevance_image_similar, calculate_mean_emb
+from app.predictions.utils import send_request_to_elasticsearch
+from app.predictions.predict import retrieve_image
 
 router = APIRouter()
 
@@ -120,6 +121,36 @@ async def conversation_search(feature: FeatureModelConversationalSearch, api_key
     result, return_answer = chat(query=query, previous_chat=previous_chat, model=model, txt_processors=txt_processor)
     output_dict = {'results': result, 'textual_answer': return_answer}
     return output_dict
+
+
+@router.post(
+    "/visual_similarity",
+    status_code=status.HTTP_200_OK,
+)
+async def visual_similarity(feature: FeatureModelVisualSimilarity, api_key: APIKey = Depends(get_api_key)):
+    # Relevance feedback with embedding similarity search
+    # Input: query and filters for search and filters, image_id for embedding similarity.
+    # Output: list of dict with key current_event.
+    query = feature.query
+    image_id = feature.image_id
+    if query == '' and len(image_id) == 0:
+        # return ramdom 100 images id
+        col = ["ImageID", "new_name", 'event_id', 'local_time', 'day_of_week', 'similar_image']
+        query_template = {"_source": col, "size": 100}
+        query_template = json.dumps(query_template)
+        raw_result = send_request_to_elasticsearch(HOST, INDICES, query_template)
+    elif query != '' and len(image_id) == 0:
+        # retrieve by query
+        raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor)
+    else:
+        # Calculate the mean embedding of all image input
+        mean_embedding = calculate_mean_emb(image_id=image_id)
+        # Perform search by image embedding
+        raw_result = relevance_image_similar(image_embedding=mean_embedding, query=query)
+    results = [{'current_event': result} for result in raw_result['hits']['hits']]
+
+    results = add_image_link(results)
+    return results
 
 
 def include_router(app):

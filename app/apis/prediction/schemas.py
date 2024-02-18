@@ -5,6 +5,7 @@ from typing import Optional, List
 class FeatureModelSingleSearch(BaseModel):
     query: str = Field(..., description="concept query that user input")
     topic: Optional[str] = Field(..., description='topic id')
+
     # semantic_name: Optional[str] = Field(..., description='location')
     # start_hour: Optional[int] = Field(default=0, description='start hour')
     # end_hour: Optional[int] = Field(default=24, description='end hour')
@@ -42,3 +43,15 @@ class FeatureModelConversationalSearch(BaseModel):
     def __str__(self):
         return f"{self.query}," \
                f"{self.previous_chat}"
+
+
+class FeatureModelVisualSimilarity(BaseModel):
+    image_id: List[str] = Field(..., description="the array of relevant image id")
+    query: str = Field(..., description="the query")
+
+    class Config:
+        orm_mode = True
+
+    def __str__(self):
+        return f"{self.query}," \
+               f"{self.image_id}"
