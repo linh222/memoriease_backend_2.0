@@ -136,7 +136,14 @@ async def visual_similarity(feature: FeatureModelVisualSimilarity, api_key: APIK
     if query == '' and len(image_id) == 0:
         # return ramdom 100 images id
         col = ["ImageID", "new_name", 'event_id', 'local_time', 'day_of_week', 'similar_image']
-        query_template = {"_source": col, "size": 100}
+        query_template = {
+            "query": {
+                "function_score": {
+                    "query": {"match_all": {}},
+                    "functions": [{"random_score": {}}]
+                }
+            },
+            "_source": col, "size": 100}
         query_template = json.dumps(query_template)
         raw_result = send_request_to_elasticsearch(HOST, INDICES, query_template)
     elif query != '' and len(image_id) == 0:
