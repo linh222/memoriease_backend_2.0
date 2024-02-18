@@ -137,12 +137,7 @@ async def visual_similarity(feature: FeatureModelVisualSimilarity, api_key: APIK
         # return ramdom 100 images id
         col = ["ImageID", "new_name", 'event_id', 'local_time', 'day_of_week', 'similar_image']
         query_template = {
-            "query": {
-                "function_score": {
-                    "query": {"match_all": {}},
-                    "functions": [{"random_score": {}}]
-                }
-            },
+            "query": {"match_all": {}},
             "_source": col, "size": 100}
         query_template = json.dumps(query_template)
         raw_result = send_request_to_elasticsearch(HOST, INDICES, query_template)
