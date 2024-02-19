@@ -43,5 +43,5 @@ json_data = response['Body'].read().decode('utf-8')
 df = pd.read_json(
     StringIO(json_data),
     orient='index')
-
+df['ImageID'] = [i[:-4] for i in df['ImageID']]
 index_data2elasticsearch(df=df, indice=INDICES, host=HOST)
