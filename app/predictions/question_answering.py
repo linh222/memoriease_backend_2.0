@@ -100,8 +100,8 @@ def process_question(question_query):
     return context_query_return, question_to_ask_return, question_to_confirm_return
 
 
-def process_result(query, blip2_embed_model, blip2_txt_processor,
-                   instruct_model, instruct_vis_processor, device):
+def answer_the_question(query, blip2_embed_model, blip2_txt_processor,
+                        instruct_model, instruct_vis_processor, device):
     context, question, question_confirm = process_question(query)
     question_type = question_classification(query)
     # different return length for different question type, the retriever retrieve results for event
@@ -111,7 +111,7 @@ def process_result(query, blip2_embed_model, blip2_txt_processor,
     else:
         retrieved_results = retrieve_image(concept_query=context, embed_model=blip2_embed_model,
                                            txt_processor=blip2_txt_processor, size=30)
-
+    return_result = [{'current_event': each_result} for each_result in retrieved_results['hits']['hits']]
     answer_dict = {}
     retrieved_context = ''
     count = 0
@@ -160,7 +160,7 @@ def process_result(query, blip2_embed_model, blip2_txt_processor,
         )
         answer = response['choices'][0]['message']['content']
         answer_dict['answer'] = answer
-    return answer_aggregation(answer_dict)
+    return return_result, answer_aggregation(answer_dict)
 
 
 def answer_aggregation(result_dict):
