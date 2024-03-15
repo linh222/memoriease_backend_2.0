@@ -328,3 +328,77 @@ def calculate_overall_score(results, main_score=0.6, temporal_score=0.2):
         results[index]['overall_score'] = overall_score
     results = sorted(results, key=lambda d: d['overall_score'], reverse=True)
     return results
+
+
+stop_word = [
+    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and",
+    "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being",
+    "below", "between", "both", "but", "by", "can't", "cannot", "could", "couldn't",
+    "did", "didn't", "do", "does", "doesn't", "doing", "don't", "down", "during",
+    "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't", "have",
+    "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers",
+    "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've",
+    "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me", "more",
+    "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only",
+    "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "shan't",
+    "she", "she'd", "she'll", "she's", "should", "shouldn't", "so", "some", "such", "than",
+    "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there", "there's",
+    "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to",
+    "too", "under", "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've",
+    "were", "weren't", "what", "what's", "when", "when's", "where", "where's", "which", "while", "who",
+    "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll",
+    "you're", "you've", "your", "yours", "yourself", "yourselves", "!", "\"", "#", "$", "%", "&", "'",
+    "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_",
+    "`", "{", "|", "}", "~", "–", "—", "‘", "’", "“", "”"
+
+]
+
+
+def temporal_extraction(query):
+    main_event, previous_event, next_event = '', '', ''
+    if 'before that' in query and 'after that' in query:
+        split_query = query.split('before that')
+        if 'after that' in split_query[0]:
+
+            previous_event = split_query[1]
+            main_event, next_event = split_query[0].split('after that')
+        else:
+            main_event = split_query[0]
+            previous_event, next_event = split_query[1].split('after that')
+    elif 'before that' in query:
+        split_query = query.split('before that')
+        main_event = split_query[0]
+        previous_event = split_query[1]
+    elif 'after that' in query:
+        split_query = query.split('after that')
+        main_event = split_query[0]
+        next_event = split_query[1]
+
+    elif 'before' in query and 'after' in query:
+        split_query = query.split('before')
+        if 'after' in split_query[0]:
+
+            next_event = split_query[1]
+            main_event, previous_event = split_query[0].split('after')
+        else:
+            main_event = split_query[0]
+            next_event, previous_event = split_query[1].split('after')
+    elif 'before' in query:
+        split_query = query.split('before')
+        main_event = split_query[0]
+        next_event = split_query[1]
+    elif 'after' in query:
+        split_query = query.split('after')
+        main_event = split_query[0]
+        previous_event = split_query[1]
+
+    else:
+        main_event = query
+
+    main_event, previous_event, next_event = main_event.strip(' '), previous_event.strip(' '), next_event.strip(' ')
+
+    if previous_event in stop_word:
+        previous_event = ''
+    if next_event in stop_word:
+        next_event = ''
+    return main_event, previous_event, next_event
