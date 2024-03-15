@@ -1,6 +1,8 @@
 from app.predictions.autofilter_construction import construct_filter, retrieve_result
 from app.predictions.predict import retrieve_image
 from app.apis.api_utils import add_image_link
+from app.predictions.utils import temporal_extraction
+from app.predictions.temporal_predict import temporal_search
 from openai import OpenAI
 import openai
 from dotenv import load_dotenv
@@ -144,16 +146,26 @@ def chat(query: str, previous_chat: list, model, txt_processors):
         pass
 
     retrieving_query = query
+
     if len(previous_chat) > 0:
         logging.info('Multi round search')
+        # Aggregate all previous chat to check if the previous chat and current query are in the same topic
         formatted_previous_chat = formulate_previous_chat(previous_chat)
         response_verify_query = chatgpt_verify_query(previous_query=formatted_previous_chat, current_query=query)
         response_verify_query = eval(response_verify_query.choices[0].message.content)
         if response_verify_query['same_topic']:
             retrieving_query = response_verify_query['query']
 
-    result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processors, size=100)
-    result = [{'current_event': each_result} for each_result in result['hits']['hits']]
+    main_event, previous_event, next_event = temporal_extraction(retrieving_query)
+
+    if previous_event == '' and next_event == '':
+        result = retrieve_image(concept_query=main_event, embed_model=model, txt_processor=txt_processors, size=100)
+        result = [{'current_event': each_result} for each_result in result['hits']['hits']]
+
+
+    else:
+        result = temporal_search(concept_query=main_event, embed_model=model, txt_processor=txt_processors,
+                                 previous_event=previous_event, next_event=next_event)
     # add image link
     result = add_image_link(result)
     # Step 3: Ask for response
