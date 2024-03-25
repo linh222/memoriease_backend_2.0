@@ -1,10 +1,11 @@
 from io import StringIO
 from os.path import join, dirname
-
+from tqdm import tqdm
 import boto3
 import pandas as pd
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk
 
 from config import HOST, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET, INDICES
 from utils import index_data2elasticsearch, create_index
@@ -44,4 +45,17 @@ df = pd.read_json(
     StringIO(json_data),
     orient='index')
 
-index_data2elasticsearch(df=df, indice=INDICES, host=HOST)
+#index_data2elasticsearch(df=df, indice=INDICES, host=HOST)
+def gen_data():
+    for i, row in tqdm(df.iterrows(), total=len(df)):
+        data = row.to_dict()
+        data.pop('index', None)
+        yield {
+            "_index": INDICES,
+            "_id": row['ImageID'],
+            "_source": data
+        }
+
+
+bulk(es, gen_data())
+
