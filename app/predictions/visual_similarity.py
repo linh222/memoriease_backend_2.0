@@ -10,6 +10,7 @@ def load_img_and_emb(image_id, directory):
     # Get the image embedding
     year = image_id[:6]
     day = image_id[6:8]
+    image_id = image_id.replace('.jpg', '')
     emb_path = f'{directory}/{year}/{day}/{image_id}.npy'
     emb = np.load(emb_path)
     return emb
