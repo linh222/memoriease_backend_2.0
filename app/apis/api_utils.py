@@ -20,7 +20,8 @@ def add_image_link(results):
     # add image link for the final output
     if len(results) >= 1:
         for result in results:
-            image_id = result['current_event']['_source']['ImageID'].replace('.jpg', '')
+            image_id = result['current_event']['_source']['ImageID']
+            image_id = image_id.replace('.jpg', '')
             image_name, year_month, day = extract_date_imagename(image_id)
             result['current_event']['_source'][
                 'image_link'] = IMAGE_SERVER + '/{}/{}/{}.webp'.format(year_month, day,
