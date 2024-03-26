@@ -153,7 +153,7 @@ async def visual_similarity(feature: FeatureModelVisualSimilarity, api_key: APIK
         # Calculate the mean embedding of all image input
         mean_embedding = calculate_mean_emb(image_id=image_id)
         # Perform search by image embedding
-        raw_result = relevance_image_similar(image_embedding=mean_embedding, query=query)
+        raw_result = relevance_image_similar(image_embedding=mean_embedding, query=query, image_id=image_id)
     results = [{'current_event': result} for result in raw_result['hits']['hits']]
 
     results = add_image_link(results)
