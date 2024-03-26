@@ -217,7 +217,7 @@ def construct_filter(query_dict):
                 'city': query_dict['location']
             }
         })
-    if 'image_exlucded' in query_dict:
+    if 'image_excluded' in query_dict:
         filter.append({
             "bool": {
                 "must_not": [
