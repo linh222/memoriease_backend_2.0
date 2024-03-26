@@ -221,10 +221,11 @@ def construct_filter(query_dict):
         filter.append({
             "bool": {
                 "must_not": [
-                    {"terms": {'ImageID': query_dict['image_excluded']}}
+                    {"terms": {"ImageID": query_dict['image_excluded']}}
                 ]
             }
         })
+
     # if 'semantic_name' in query_dict:
     #     if query_dict['semantic_name'] != '':
     #         filter.append({
