@@ -48,12 +48,13 @@ async def predict_image_temporal(feature: FeatureModelTemporalSearch, api_key: A
     # Input: before, main, after event, filters
     # Output: list of dicts with three keys: current_event, previous_event, after_event
     query = feature.query
-    # semantic_name = feature.semantic_name
+    semantic_name = feature.semantic_name
 
     # Perform search
     results = temporal_search(concept_query=query, embed_model=model, txt_processor=txt_processor,
                               previous_event=feature.previous_event,
-                              next_event=feature.next_event, time_gap=feature.time_gap)
+                              next_event=feature.next_event, time_gap=feature.time_gap,
+                              semantic_name=semantic_name)
     results = add_image_link(results)
 
     # Automatic run Logging query string
@@ -70,14 +71,15 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
     # Input: query, filters
     # Output: list of dicts with 1 keys: current_event
     query = feature.query
-    topic = feature.topic
+    semantic_name = feature.semantic_name
     # semantic_name = feature.semantic_name
     # start_hour = feature.start_hour
     # end_hour = feature.end_hour
     # is_weekend = feature.is_weekend
 
     # Perform search
-    raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor)
+    raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor,
+                                semantic_name=semantic_name)
     results = [{'current_event': result} for result in raw_result['hits']['hits']]
     results = add_image_link(results)
 
