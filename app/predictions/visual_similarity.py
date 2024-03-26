@@ -26,7 +26,9 @@ def calculate_mean_emb(image_id):
     return avg_embed
 
 
-def relevance_image_similar(image_embedding, query, size=100):
+def relevance_image_similar(image_embedding, query, image_id=None, size=100):
+    if image_id is None:
+        image_id = []
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id']
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(query)
     query_dict = {
@@ -36,7 +38,10 @@ def relevance_image_similar(image_embedding, query, size=100):
         'weekday': weekday,
         'time_filter': time_filter
     }
+    if len(image_id) > 0:
+        query_dict['image_excluded'] = image_id
     filters = construct_filter(query_dict)
+    print(filters)
     query_template = {
 
         "knn": {
