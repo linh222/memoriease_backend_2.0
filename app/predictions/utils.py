@@ -222,7 +222,7 @@ def construct_filter(query_dict):
             "bool": {
                 "must_not": {
                     "terms": {
-                        "_id": query_dict['image_excluded']
+                        "ImageID": query_dict['image_excluded']
                     }
                 }
             }
