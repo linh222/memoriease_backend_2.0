@@ -225,7 +225,8 @@ def construct_filter(query_dict):
                         "_id": query_dict['image_excluded']
                     }
                 }
-            })
+            }
+        })
 
     # if 'semantic_name' in query_dict:
     #     if query_dict['semantic_name'] != '':
