@@ -41,7 +41,6 @@ def relevance_image_similar(image_embedding, query, image_id=None, size=100):
     if len(image_id) > 0:
         query_dict['image_excluded'] = image_id
     filters = construct_filter(query_dict)
-    print(filters)
     query_template = {
 
         "knn": {

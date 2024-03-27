@@ -4,7 +4,7 @@ from typing import Optional, List
 
 class FeatureModelSingleSearch(BaseModel):
     query: str = Field(..., description="concept query that user input")
-    topic: Optional[str] = Field(..., description='topic id')
+    semantic_name: Optional[str] = Field(..., description='semantic_name')
 
     # semantic_name: Optional[str] = Field(..., description='location')
     # start_hour: Optional[int] = Field(default=0, description='start hour')
@@ -15,7 +15,7 @@ class FeatureModelSingleSearch(BaseModel):
         orm_mode = True
 
     def __str__(self):
-        return f"{self.query}, {self.topic}"
+        return f"{self.query}, {self.semantic_name}"
 
 
 class FeatureModelTemporalSearch(BaseModel):
@@ -23,6 +23,7 @@ class FeatureModelTemporalSearch(BaseModel):
     previous_event: Optional[str] = Field(..., description="query of previous event")
     next_event: Optional[str] = Field(..., description='query of next event')
     time_gap: Optional[int] = Field(default=1, description='time between events')
+    semantic_name: Optional[str] = Field(..., description='semantic name')
 
     class Config:
         orm_mode = True
@@ -30,7 +31,7 @@ class FeatureModelTemporalSearch(BaseModel):
     def __str__(self):
         return f"{self.query}," \
                f"{self.previous_event}, {self.next_event}, " \
-               f"{self.time_gap}"
+               f"{self.time_gap}, {self.semantic_name}"
 
 
 class FeatureModelConversationalSearch(BaseModel):

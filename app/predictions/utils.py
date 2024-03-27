@@ -228,13 +228,13 @@ def construct_filter(query_dict):
             }
         })
 
-    # if 'semantic_name' in query_dict:
-    #     if query_dict['semantic_name'] != '':
-    #         filter.append({
-    #             "term": {
-    #                 'new_name': query_dict['semantic_name']
-    #             }
-    #         })
+    if 'semantic_name' in query_dict:
+        if query_dict['semantic_name'] != '':
+            filter.append({
+                "term": {
+                    'new_name': query_dict['semantic_name']
+                }
+            })
     # if 'start_hour' in query_dict:
     #     if query_dict['start_hour'] != '':
     #         filter.append({
