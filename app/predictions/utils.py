@@ -120,7 +120,7 @@ def add_advanced_filters(advanced_filters, query_dict):
         advanced_filter = advanced_filter.replace('@', '').split(':')
         advanced_filter[1] = advanced_filter[1].replace('_', ' ')
         try:
-            query_dict[map_dict[advanced_filter[0]]] = advanced_filters[1]
+            query_dict[map_dict[advanced_filter[0]]] = advanced_filter[1]
         except:
             print(advanced_filter[0])
     return query_dict
