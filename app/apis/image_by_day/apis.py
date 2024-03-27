@@ -6,7 +6,7 @@ import pandas as pd
 from fastapi import APIRouter, status
 
 from app.apis.image_by_day.schema import FeatureModelImage
-from app.config import IMAGE_SERVER, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET
+from app.config import IMAGE_SERVER, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET, IMAGE_EXT
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ def generate_image_link(image_id, IMAGE_SERVER):
     # Output: image link: http://localhost:9200/201901/01/20190101_202020.webp
     year_month = image_id[:6]
     day = image_id[6:8]
-    return f"{IMAGE_SERVER}/{year_month}/{day}/{image_id}.webp"
+    return f"{IMAGE_SERVER}/{year_month}/{day}/{image_id}.{IMAGE_EXT}"
 
 
 def add_link(row):

@@ -23,6 +23,7 @@ INDICES = os.environ.get('indices')
 IMAGE_SERVER = os.environ.get('image_server')
 GROUP_INDICES = os.environ.get('group_indices')
 BUCKET = os.environ.get('bucket')
+IMAGE_EXT = os.environ.get('image_ext')
 
 
 def get_project_root() -> Path:
