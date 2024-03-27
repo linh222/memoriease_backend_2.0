@@ -24,8 +24,9 @@ def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name
     }
     if len(advanced_filters) > 0:
         query_dict = add_advanced_filters(advanced_filters, query_dict)
-
+    print(query_dict)
     filters = construct_filter(query_dict)
+    print(filters)
     query_template = build_query_template(filters, text_embedding, size=size)
     query_template = json.dumps(query_template)
 
