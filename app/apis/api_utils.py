@@ -6,7 +6,7 @@ import boto3
 import pandas as pd
 from fastapi import Request
 
-from app.config import IMAGE_SERVER, root_path, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET
+from app.config import IMAGE_SERVER, root_path, AWS_SECRET_KEY, AWS_ACCESS_KEY, BUCKET, IMAGE_EXT
 from app.predictions.utils import process_query
 
 # Load resource from s3 for event segmentation
@@ -24,8 +24,8 @@ def add_image_link(results):
             image_id = image_id.replace('.jpg', '')
             image_name, year_month, day = extract_date_imagename(image_id)
             result['current_event']['_source'][
-                'image_link'] = IMAGE_SERVER + '/{}/{}/{}.webp'.format(year_month, day,
-                                                                       image_name)
+                'image_link'] = IMAGE_SERVER + '/{}/{}/{}.{}'.format(year_month, day,
+                                                                     image_name, IMAGE_EXT)
             # similar images
             list_similar_image = []
             event_id = int(result['current_event']['_source']['event_id'])
@@ -36,7 +36,7 @@ def add_image_link(results):
                     if image_id != image_name:
                         image_name, year_month, day = extract_date_imagename(image_id)
                         list_similar_image.append(
-                            '{}/{}/{}/{}.webp'.format(IMAGE_SERVER, year_month, day, image_name))
+                            '{}/{}/{}/{}.{}'.format(IMAGE_SERVER, year_month, day, image_name, IMAGE_EXT))
             result['current_event']['_source']['similar_images'] = list_similar_image
     return results
 

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import requests
 
 from app.apis.api_utils import extract_date_imagename
-from app.config import HOST, INDICES, IMAGE_SERVER
+from app.config import HOST, INDICES, IMAGE_SERVER, IMAGE_EXT
 from app.predictions.blip_extractor import extract_query_blip_embedding
 from app.predictions.predict import retrieve_image
 from app.predictions.utils import process_query, build_query_template, construct_filter, calculate_overall_score
@@ -57,8 +57,7 @@ def send_request_by_event(main_event_result, event_query, temporal_type):
             image_id = image_id_result['_source']['ImageID']
             image_name, year_month, day = extract_date_imagename(image_id)
             result['responses'][index]['hits']['hits'][0]['_source'][
-                'image_link'] = '{}/{}/{}/{}.webp'.format(IMAGE_SERVER,
-                                                          year_month, day, image_name)
+                'image_link'] = '{}/{}/{}/{}.'.format(IMAGE_SERVER, year_month, day, image_name, IMAGE_EXT)
             if temporal_type == 'previous':
                 main_event_result[index]['previous_event'] = result['responses'][index]['hits']['hits'][0]
             elif temporal_type == 'next':
