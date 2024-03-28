@@ -107,6 +107,25 @@ valid_location = ' '.join(valid_location).split(' ')
 valid_location = list(set(valid_location))
 
 
+def extract_advanced_filter(input_query):
+    filters = re.findall(r'\S*@\S+', input_query)
+    returned_query = re.sub(r'\S*@\S+', '', input_query).strip()
+    return returned_query, filters
+
+
+def add_advanced_filters(advanced_filters, query_dict):
+    map_dict = {'weekend': "is_weekend", 'start': "start_hour", 'end': 'end_hour',
+                'location': 'city', 'ocr': 'ocr'}
+    for advanced_filter in advanced_filters:
+        advanced_filter = advanced_filter.replace('@', '').split(':')
+        advanced_filter[1] = advanced_filter[1].replace('_', ' ')
+        try:
+            query_dict[map_dict[advanced_filter[0]]] = advanced_filter[1]
+        except:
+            print(advanced_filter[0])
+    return query_dict
+
+
 def process_query(sent):
     # extract relevant information in the query: keyword, time perios, weekday, time filter, location
     init_tagger = Tagger(locations)
@@ -235,31 +254,34 @@ def construct_filter(query_dict):
                     'new_name': query_dict['semantic_name']
                 }
             })
-    # if 'start_hour' in query_dict:
-    #     if query_dict['start_hour'] != '':
-    #         filter.append({
-    #             "range": {
-    #                 'hour': {
-    #                     "gte": query_dict['start_hour']
-    #                 }
-    #             }
-    #         })
-    # if 'end_hour' in query_dict:
-    #     if query_dict['end_hour'] != '':
-    #         filter.append({
-    #             "range": {
-    #                 'hour': {
-    #                     "lte": query_dict['end_hour']
-    #                 }
-    #             }
-    #         })
-    # if 'is_weekend' in query_dict:
-    #     if query_dict['is_weekend'] != '':
-    #         filter.append({
-    #             "term": {
-    #                 'is_weekend': query_dict['is_weekend']
-    #             }
-    #         })
+    if 'start_hour' in query_dict:
+        filter.append({
+            "range": {
+                'hour': {
+                    "gte": query_dict['start_hour']
+                }
+            }
+        })
+    if 'end_hour' in query_dict:
+        filter.append({
+            "range": {
+                'hour': {
+                    "lte": query_dict['end_hour']
+                }
+            }
+        })
+    if 'is_weekend' in query_dict:
+        filter.append({
+            "term": {
+                'is_weekend': query_dict['is_weekend']
+            }
+        })
+    if 'ocr' in query_dict:
+        filter.append({
+            "term": {
+                'OCR': query_dict['ocr']
+            }
+        })
     # if 'groups' in query_dict:
     #     if query_dict['groups'] != '':
     #         filter.append({

@@ -57,7 +57,7 @@ def send_request_by_event(main_event_result, event_query, temporal_type):
             image_id = image_id_result['_source']['ImageID']
             image_name, year_month, day = extract_date_imagename(image_id)
             result['responses'][index]['hits']['hits'][0]['_source'][
-                'image_link'] = '{}/{}/{}/{}.'.format(IMAGE_SERVER, year_month, day, image_name, IMAGE_EXT)
+                'image_link'] = '{}/{}/{}/{}.{}'.format(IMAGE_SERVER, year_month, day, image_name, IMAGE_EXT)
             if temporal_type == 'previous':
                 main_event_result[index]['previous_event'] = result['responses'][index]['hits']['hits'][0]
             elif temporal_type == 'next':

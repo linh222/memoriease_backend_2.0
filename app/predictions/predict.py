@@ -2,11 +2,15 @@ import json
 
 from app.config import HOST, INDICES
 from app.predictions.blip_extractor import extract_query_blip_embedding
-from app.predictions.utils import process_query, construct_filter, build_query_template, send_request_to_elasticsearch
+from app.predictions.utils import process_query, construct_filter, build_query_template, send_request_to_elasticsearch,\
+    extract_advanced_filter, add_advanced_filters
 
 
 def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name='', size=100):
-    processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(concept_query)
+    # Advanced search with tag
+    returned_query, advanced_filters = extract_advanced_filter(concept_query)
+    # Processing the query
+    processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(returned_query)
     text_embedding = extract_query_blip_embedding(processed_query, embed_model, txt_processor)
 
     query_dict = {
@@ -17,7 +21,8 @@ def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name
         "time_filter": time_filter,
         "semantic_name": semantic_name
     }
-
+    if len(advanced_filters) > 0:
+        query_dict = add_advanced_filters(advanced_filters, query_dict)
     filters = construct_filter(query_dict)
     query_template = build_query_template(filters, text_embedding, size=size)
     query_template = json.dumps(query_template)

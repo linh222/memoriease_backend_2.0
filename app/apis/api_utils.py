@@ -21,7 +21,6 @@ def add_image_link(results):
     if len(results) >= 1:
         for result in results:
             image_id = result['current_event']['_source']['ImageID']
-            image_id = image_id.replace('.jpg', '')
             image_name, year_month, day = extract_date_imagename(image_id)
             result['current_event']['_source'][
                 'image_link'] = IMAGE_SERVER + '/{}/{}/{}.{}'.format(year_month, day,
@@ -50,7 +49,7 @@ def extract_date_imagename(image_id):
         date, image_name = image_id.split('/')
         year_month = "".join(date.split("-")[:2])
         day = date.split("-")[-1]
-    return image_name, year_month, day
+    return image_name.replace('.jpg', ''), year_month, day
 
 
 def logger_init():
