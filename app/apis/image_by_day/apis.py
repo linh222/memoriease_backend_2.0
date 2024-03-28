@@ -13,7 +13,7 @@ router = APIRouter()
 # TODO: add visualize for lsc20
 # Load data from s3. the event segmentation for visual image by day -> day -> event -> image
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
-response = s3.get_object(Bucket=BUCKET, Key='image_by_event_for_visualization1.csv')
+response = s3.get_object(Bucket=BUCKET, Key='image_for_visualization_no_event.csv')
 csv_data = response['Body'].read().decode('utf-8')
 df_image = pd.read_csv(StringIO(csv_data))
 
