@@ -1,14 +1,15 @@
-from app.predictions.autofilter_construction import construct_filter, retrieve_result
-from app.predictions.predict import retrieve_image
-from app.apis.api_utils import add_image_link
-from app.predictions.utils import temporal_extraction
-from app.predictions.temporal_predict import temporal_search
-from openai import OpenAI
+import logging
+import os
+
 import openai
 from dotenv import load_dotenv
+from openai import OpenAI
+
+from app.apis.api_utils import add_image_link
 from app.config import root_path
-import os
-import logging
+from app.predictions.predict import retrieve_image
+from app.predictions.temporal_predict import temporal_search
+from app.predictions.utils import temporal_extraction
 
 logging.basicConfig(filename='conversational_search_logs.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -57,14 +58,85 @@ def textual_answer(query):
     return response.choices[0].message.content
 
 
-def formulate_previous_chat(previous_chat: list):
-    formatted_chat = ''
-    for i in range(len(previous_chat)):
-        formatted_chat += f'Turn {i + 1}: {previous_chat[i]}\n'
-    return formatted_chat
+# def formulate_previous_chat(previous_chat: list):
+#     formatted_chat = ''
+#     for i in range(len(previous_chat)):
+#         formatted_chat += f'Turn {i + 1}: {previous_chat[i]}\n'
+#     return formatted_chat
 
 
-def chatgpt_verify_query(previous_query, current_query):
+# def chatgpt_verify_query(previous_query, current_query):
+#     client = OpenAI()
+#
+#     response = client.chat.completions.create(
+#         model="gpt-3.5-turbo",
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": "Acting as a chat assistant for a lifelog retrieval system. A user has asked for "
+#                            "information about lifelog with the previous query and current query."
+#             },
+#             {
+#                 "role": "user",
+#                 "content": "If the current query still follows the previous query, consolidate the two queries into a"
+#                            " single query and return a json file with format {'same_topic'=True, query: ''}, "
+#                            "else return json format {'same_topic'=False}\nExample:\nTurn 1: Find all the images I was"
+#                            " in a pub in Ireland.\nCurrent query: I remember that is in 2020\nResult: {"
+#                            "'same_topic'=True, query: 'Find all the images I was in a pub in Ireland in 2020'}\n\nDo "
+#                            "the same for this query:\nPrevious query: Find all the images I sitting on a chair in a "
+#                            "park\nCurrent query: in Dublin in 2019"
+#             },
+#             {
+#                 "role": "assistant",
+#                 "content": "{'same_topic': True, 'query': 'Find all the images I sit on a chair in a park in Dublin "
+#                            "in 2019'}"
+#             },
+#             {
+#                 "role": "user",
+#                 "content": "That is true. You are great.\nHow about this: \nTurn 1: Find all the images I sitting on "
+#                            "a chair in a park\nCurrent query: I was on a library in Dublin City University on Monday"
+#             },
+#             {
+#                 "role": "assistant",
+#                 "content": "{'same_topic': False}"
+#             },
+#             {
+#                 "role": "user",
+#                 "content": "How about this:\nTurn 1: Find all the images I sitting on a chair in a park\nCurrent "
+#                            "query: on Monday"
+#             },
+#             {
+#                 "role": "assistant",
+#                 "content": "{'same_topic': True, 'query': 'Find all the images I sit on a chair in a park on Monday'}"
+#             },
+#             {
+#                 "role": "user",
+#                 "content": "Turn 1: Find all the images I was in a pub in Ireland\nTurn 2: I remember that was in "
+#                            "2020\nCurrent query: I remember I drank Guinness in the pub"
+#             },
+#             {
+#                 "role": "assistant",
+#                 "content": "{'same_topic': True, 'query': 'Find all the images I was in a pub in Ireland in 2020. I "
+#                            "drank Guinness in the pub.'}"
+#             },
+#             {
+#                 "role": "user",
+#                 "content": f"{previous_query}Current query: {current_query}"
+#             }
+#         ],
+#         temperature=1,
+#         max_tokens=256,
+#         top_p=1,
+#         frequency_penalty=0,
+#         presence_penalty=0
+#     )
+#     return response
+
+
+def aggregate_multiround_chat(current_chat, previous_chat=None):
+    if previous_chat is None:
+        previous_chat = []
+    previous_chat = previous_chat.append(current_chat)
     client = OpenAI()
 
     response = client.chat.completions.create(
@@ -72,64 +144,24 @@ def chatgpt_verify_query(previous_query, current_query):
         messages=[
             {
                 "role": "system",
-                "content": "Acting as a chat assistant for a lifelog retrieval system. A user has asked for "
-                           "information about lifelog with the previous query and current query."
+                "content": "You are a helpful dialogue-processing assistant who can aggregate information from "
+                           "multiple chats in a dialogue to produce a single query. For example:\nUsers: ['Find for "
+                           "me all times I was on the beach in Thailand', 'in 2020', 'I remember I walked from my "
+                           "hotel to the beach']\nOutput: Find for me all the times I was on the beach in Thailand in "
+                           "2020. I walk from my hotel to the beach"
             },
             {
                 "role": "user",
-                "content": "If the current query still follows the previous query, consolidate the two queries into a "
-                           "single query and return a json file with format {'same_topic'=True, query: ''}, "
-                           "else return json format {'same_topic'=False}\nExample:\nTurn 1: Find all the images I was "
-                           "in a pub in Ireland.\nCurrent query: I remember that is in 2020\nResult: {"
-                           "'same_topic'=True, query: 'Find all the images I was in a pub in Ireland in 2020'}\n\nDo "
-                           "the same for this query:\nPrevious query: Find all the images I sitting on a chair in a "
-                           "park\nCurrent query: in Dublin in 2019"
-            },
-            {
-                "role": "assistant",
-                "content": "{'same_topic': True, 'query': 'Find all the images I sit on a chair in a park in Dublin "
-                           "in 2019'}"
-            },
-            {
-                "role": "user",
-                "content": "That is true. You are great.\nHow about this: \nTurn 1: Find all the images I sitting on "
-                           "a chair in a park\nCurrent query: I was on a library in Dublin City University on Monday"
-            },
-            {
-                "role": "assistant",
-                "content": "{'same_topic': False}"
-            },
-            {
-                "role": "user",
-                "content": "How about this:\nTurn 1: Find all the images I sitting on a chair in a park\nCurrent "
-                           "query: on Monday"
-            },
-            {
-                "role": "assistant",
-                "content": "{'same_topic': True, 'query': 'Find all the images I sit on a chair in a park on Monday'}"
-            },
-            {
-                "role": "user",
-                "content": "Turn 1: Find all the images I was in a pub in Ireland\nTurn 2: I remember that was in "
-                           "2020\nCurrent query: I remember I drank Guinness in the pub"
-            },
-            {
-                "role": "assistant",
-                "content": "{'same_topic': True, 'query': 'Find all the images I was in a pub in Ireland in 2020. I "
-                           "drank Guinness in the pub.'}"
-            },
-            {
-                "role": "user",
-                "content": f"{previous_query}Current query: {current_query}"
+                "content": str(previous_chat)
             }
         ],
         temperature=1,
-        max_tokens=256,
+        max_tokens=512,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0
     )
-    return response
+    return response.choices[0].message.content
 
 
 def chat(query: str, previous_chat: list, model, txt_processors):
@@ -150,20 +182,22 @@ def chat(query: str, previous_chat: list, model, txt_processors):
     if len(previous_chat) > 0:
         logging.info('Multi round search')
         # Aggregate all previous chat to check if the previous chat and current query are in the same topic
-        formatted_previous_chat = formulate_previous_chat(previous_chat)
-        response_verify_query = chatgpt_verify_query(previous_query=formatted_previous_chat, current_query=query)
-        response_verify_query = eval(response_verify_query.choices[0].message.content)
-        if response_verify_query['same_topic']:
-            retrieving_query = response_verify_query['query']
+        # formatted_previous_chat = formulate_previous_chat(previous_chat)
+        retrieving_query = aggregate_multiround_chat(previous_chat=previous_chat, current_chat=query)
+        # response_verify_query = eval(response_verify_query.choices[0].message.content)
+        # if response_verify_query['same_topic']:
+        #     retrieving_query = response_verify_query['query']
 
+    # Extract the temporal query by rule-based
     main_event, previous_event, next_event = temporal_extraction(retrieving_query)
 
+    # Single event retrieval
     if previous_event == '' and next_event == '':
         result = retrieve_image(concept_query=main_event, embed_model=model, txt_processor=txt_processors, size=100)
         result = [{'current_event': each_result} for each_result in result['hits']['hits']]
 
-
     else:
+        # Multi round retrieval
         result = temporal_search(concept_query=main_event, embed_model=model, txt_processor=txt_processors,
                                  previous_event=previous_event, next_event=next_event)
     # add image link
