@@ -46,7 +46,7 @@ cd folder/to/elasticsearch
 # Ingest data
 cd memoriease_backend_2.0
 python app/download_nltk.py
-python app/ingest_data_lsc20_lsc23.py
+python app/ingest_data_lsc24.py
 ```
 
 ## Endpoints
@@ -60,30 +60,22 @@ request methods, and expected responses.
   + time_period: (optional) morning or afternoon
   + hour: (optional) any hour from 0 to 23
 + /metadata: POST for frontend to submit the results after submission for logging.
-+ /predict: POST to predict for lsc23, with following parameter
++ /predict: POST to predict for lsc24, with following parameter
   + query: full text query, that can be auto filter
-  + topic: topic name for logging
   + semantic_name: the semantic name for filtering
-  + start_hour: (optional) 0-> 23 for filtering start hour of event
-  + end_hour: (optional) 0-> 23 for filtering end hour of event
-  + is_weekend: (optional) 1 or 0, filter the event is in weekend or not.
+  + Advanced filters: @weekend:1/0, @start:0->23, @end:0-23, @ocr:text, @location:text
 + /predict_temporal: POST to predict in temporal with previous and next event, with following parameters:
   + query: the current event query
   + semantic_name: the filter by semantic name
   + previous_event: the query for previous event
   + next_event: the query for next event
   + time_gap: the time gap in hour
-+ /relevance_feedback: POST retrieve images by positive relevant feedback
-  + query: the full-text query
++ /visual_similarity: POST retrieve images by visual
+  + query: the full-text query to initial retrieve and filters
   + image_id: the list of relevant images
-  + semantic_name: the semantic name for filtering
-+ /question_answering: POST request to ask and answer question about lifelog
-  + query: full text question
-  + topic: topic name for logging
-  + semantic_name: the semantic name for filtering
-  + start_hour: (optional) 0-> 23 for filtering start hour of event
-  + end_hour: (optional) 0-> 23 for filtering end hour of event
-  + is_weekend: (optional) 1 or 0, filter the event is in weekend or not.
++ /conversational_search: POST request to ask and answer by conversational search lifelog
+  + query: the current chat of users
+  + previous_chat: list or previous chat from users
 
 
 ## Testing
