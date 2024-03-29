@@ -71,7 +71,7 @@ request methods, and expected responses.
   + next_event: the query for next event
   + time_gap: the time gap in hour
 + /visual_similarity: POST retrieve images by visual
-  + query: the full-text query to initual retrieve and filters
+  + query: the full-text query to initial retrieve and filters
   + image_id: the list of relevant images
 + /conversational_search: POST request to ask and answer by conversational search lifelog
   + query: the current chat of users

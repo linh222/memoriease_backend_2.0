@@ -136,9 +136,8 @@ def textual_answer(query):
 def aggregate_multiround_chat(current_chat, previous_chat=None):
     if previous_chat is None:
         previous_chat = []
-    previous_chat = previous_chat.append(current_chat)
+    previous_chat.append(current_chat)
     client = OpenAI()
-
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
