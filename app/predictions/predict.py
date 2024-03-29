@@ -1,14 +1,19 @@
 import json
+import logging
 
 from app.config import HOST, INDICES
 from app.predictions.blip_extractor import extract_query_blip_embedding
 from app.predictions.utils import process_query, construct_filter, build_query_template, send_request_to_elasticsearch,\
     extract_advanced_filter, add_advanced_filters
 
+logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name='', size=100):
     # Advanced search with tag
     returned_query, advanced_filters = extract_advanced_filter(concept_query)
+    logging.info(f"Retrieve: Extracted advanced search: {advanced_filters}")
     # Processing the query
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(returned_query)
     text_embedding = extract_query_blip_embedding(processed_query, embed_model, txt_processor)
@@ -23,6 +28,7 @@ def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name
     }
     if len(advanced_filters) > 0:
         query_dict = add_advanced_filters(advanced_filters, query_dict)
+    logging.info(f"Retrieve: Query dictionary: {query_dict}")
     filters = construct_filter(query_dict)
     query_template = build_query_template(filters, text_embedding, size=size)
     query_template = json.dumps(query_template)

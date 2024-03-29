@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timedelta
 
 import requests
@@ -8,6 +9,9 @@ from app.config import HOST, INDICES, IMAGE_SERVER, IMAGE_EXT
 from app.predictions.blip_extractor import extract_query_blip_embedding
 from app.predictions.predict import retrieve_image
 from app.predictions.utils import process_query, build_query_template, construct_filter, calculate_overall_score
+
+logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def time_processing_event(list_event_query, main_event, time_gap, time_period, location, keyword, weekday, embed,
@@ -36,6 +40,7 @@ def time_processing_event(list_event_query, main_event, time_gap, time_period, l
     previous_filter = construct_filter(query_dict)
     previous_filter_template = build_query_template(previous_filter, embed, size=1)
     list_event_query.append(previous_filter_template)
+    logging.info("Temporal Predict: create filters for temporal event finished")
     return list_event_query
 
 
@@ -82,6 +87,7 @@ def temporal_search(concept_query, embed_model, txt_processor,
     # Output: Results list of dicts with three keys: current event, previous event, after event
     main_event_result = retrieve_image(concept_query=concept_query, embed_model=embed_model,
                                        txt_processor=txt_processor, semantic_name=semantic_name)
+    logging.info("Temporal predict: main event retrieve finished")
     main_event_result = main_event_result['hits']['hits']
     full_result = []
     list_next_event_query, list_previous_event_query = [], []

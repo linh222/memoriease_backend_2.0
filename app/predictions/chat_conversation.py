@@ -11,7 +11,7 @@ from app.predictions.predict import retrieve_image
 from app.predictions.temporal_predict import temporal_search
 from app.predictions.utils import temporal_extraction
 
-logging.basicConfig(filename='conversational_search_logs.log', level=logging.INFO,
+logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 load_dotenv(str(root_path) + '/.env')
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -169,7 +169,7 @@ def chat(query: str, previous_chat: list, model, txt_processors):
     # Input:
     #   Query: The current query from users
     #   Previous chat: the previous queries from users
-    logging.info(f'Received query {query}, with previous chat: {previous_chat}')
+    logging.info(f'Chat: Received query {query}, with previous chat: {previous_chat}')
     if query == '':
         raise ValueError('Empty string')
     elif len(previous_chat) > 0 and 'Find' not in query and 'images' not in query:
@@ -180,17 +180,19 @@ def chat(query: str, previous_chat: list, model, txt_processors):
     retrieving_query = query
 
     if len(previous_chat) > 0:
-        logging.info('Multi round search')
+        logging.info('Chat: Multi round search')
         # Aggregate all previous chat to check if the previous chat and current query are in the same topic
         # formatted_previous_chat = formulate_previous_chat(previous_chat)
         retrieving_query = aggregate_multiround_chat(previous_chat=previous_chat, current_chat=query)
+        logging.info(f"Chat: Aggregated query {retrieving_query}")
         # response_verify_query = eval(response_verify_query.choices[0].message.content)
         # if response_verify_query['same_topic']:
         #     retrieving_query = response_verify_query['query']
 
     # Extract the temporal query by rule-based
     main_event, previous_event, next_event = temporal_extraction(retrieving_query)
-
+    logging.info(f"Chat: Extracted event. Main event: {main_event}, previous_event: {previous_event}, "
+                 f"next event: {next_event}")
     # Single event retrieval
     if previous_event == '' and next_event == '':
         result = retrieve_image(concept_query=main_event, embed_model=model, txt_processor=txt_processors, size=100)
@@ -202,12 +204,13 @@ def chat(query: str, previous_chat: list, model, txt_processors):
                                  previous_event=previous_event, next_event=next_event)
     # add image link
     result = add_image_link(result)
+    logging.info("Chat: Retrieved results finish")
     # Step 3: Ask for response
     return_answer = 'I am so sorry but I cannot find any relevant information about your query. Please refine ' \
                     'your query to make it more specifically.'
     if result is not None:
         if len(result) > 0:
             return_answer = textual_answer(retrieving_query)
-    logging.info(f'Answer: {return_answer}')
+    logging.info(f'Chat: Textual answer: {return_answer}')
 
     return result, return_answer

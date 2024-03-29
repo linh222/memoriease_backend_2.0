@@ -1,9 +1,12 @@
 import numpy as np
 from app.config import settings, HOST, INDICES
 import json
-import requests
+import logging
 from app.predictions.utils import process_query, construct_filter, send_request_to_elasticsearch
 from app.predictions.predict import retrieve_image
+
+logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def load_img_and_emb(image_id, directory):
@@ -38,6 +41,7 @@ def relevance_image_similar(image_embedding, query, image_id=None, size=100):
         'weekday': weekday,
         'time_filter': time_filter
     }
+    logging.info(f"Visual similarity: query dict: {query_dict}")
     if len(image_id) > 0:
         query_dict['image_excluded'] = image_id
     filters = construct_filter(query_dict)
