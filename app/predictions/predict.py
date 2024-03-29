@@ -17,7 +17,7 @@ def retrieve_image(concept_query: str, embed_model, txt_processor, semantic_name
     # Processing the query
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(returned_query)
     text_embedding = extract_query_blip_embedding(processed_query, embed_model, txt_processor)
-
+    logging.info(f"Retrieved: Embeded query: {processed_query}")
     query_dict = {
         "time_period": time_period,
         "location": location,
