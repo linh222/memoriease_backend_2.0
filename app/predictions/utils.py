@@ -136,6 +136,7 @@ def process_query(sent):
     weekday = ''
     location = []
     time_filter = ['', '']
+    valid_weekday = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
     for index in range(len(tags)):
         if (tags[index][1] == 'NN' or tags[index][1] == 'REGION') and tags[index][0] in valid_location:
@@ -150,7 +151,8 @@ def process_query(sent):
             except:
                 time_period = ''
         elif tags[index][1] == 'WEEKDAY':
-            weekday = tags[index][0]
+            if tags[index][0] in ' '.join(valid_weekday):
+                weekday = tags[index][0]
         elif tags[index][1] == 'DATE' or (tags[index][1] and tags[index][0] in ['2019', '2020']):
             time_filter = time_contructor(tags[index][0])
         else:
@@ -255,27 +257,40 @@ def construct_filter(query_dict):
                 }
             })
     if 'start_hour' in query_dict:
-        filter.append({
-            "range": {
-                'hour': {
-                    "gte": query_dict['start_hour']
-                }
-            }
-        })
+        try:
+            int_start_hour = int(query_dict['start_hour'])
+            if 0 <= int_start_hour <= 23:
+                filter.append({
+                    "range": {
+                        'hour': {
+                            "gte": query_dict['start_hour']
+                        }
+                    }
+                })
+        except:
+            pass
     if 'end_hour' in query_dict:
-        filter.append({
-            "range": {
-                'hour': {
-                    "lte": query_dict['end_hour']
-                }
-            }
-        })
+        try:
+            int_end_hour = int(query_dict['end_hour'])
+            if 0 <= int_end_hour <= 23:
+                filter.append({
+                    "range": {
+                        'hour': {
+                            "lte": query_dict['end_hour']
+                        }
+                    }
+                })
+        except:
+            pass
     if 'is_weekend' in query_dict:
-        filter.append({
-            "term": {
-                'is_weekend': query_dict['is_weekend']
-            }
-        })
+        if query_dict['is_weekend'] not in '01':
+            pass
+        else:
+            filter.append({
+                "term": {
+                    'is_weekend': query_dict['is_weekend']
+                }
+            })
     if 'ocr' in query_dict:
         filter.append({
             "term": {
