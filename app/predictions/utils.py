@@ -151,7 +151,7 @@ def process_query(sent):
             except:
                 time_period = ''
         elif tags[index][1] == 'WEEKDAY':
-            if tags[index][0] in ' '.join(valid_weekday):
+            if tags[index][0].lower() in valid_weekday:
                 weekday = tags[index][0]
         elif tags[index][1] == 'DATE' or (tags[index][1] and tags[index][0] in ['2019', '2020']):
             time_filter = time_contructor(tags[index][0])
