@@ -404,39 +404,39 @@ stop_word = [
 
 def temporal_extraction(query):
     main_event, previous_event, next_event = '', '', ''
-    if 'before that' in query and 'after that' in query:
+    if ' before that' in query and ' after that' in query:
         split_query = query.split('before that')
-        if 'after that' in split_query[0]:
+        if ' after that' in split_query[0]:
 
             previous_event = split_query[1]
-            main_event, next_event = split_query[0].split('after that')
+            main_event, next_event = split_query[0].split(' after that')
         else:
             main_event = split_query[0]
-            previous_event, next_event = split_query[1].split('after that')
-    elif 'before that' in query:
-        split_query = query.split('before that')
+            previous_event, next_event = split_query[1].split(' after that')
+    elif ' before that' in query:
+        split_query = query.split(' before that')
         main_event = split_query[0]
         previous_event = split_query[1]
-    elif 'after that' in query:
-        split_query = query.split('after that')
+    elif ' after that' in query:
+        split_query = query.split(' after that')
         main_event = split_query[0]
         next_event = split_query[1]
 
-    elif 'before' in query and 'after' in query:
-        split_query = query.split('before')
-        if 'after' in split_query[0]:
+    elif ' before ' in query and ' after ' in query:
+        split_query = query.split(' before ')
+        if ' after ' in split_query[0]:
 
             next_event = split_query[1]
-            main_event, previous_event = split_query[0].split('after')
+            main_event, previous_event = split_query[0].split(' after ')
         else:
             main_event = split_query[0]
-            next_event, previous_event = split_query[1].split('after')
-    elif 'before' in query:
-        split_query = query.split('before')
+            next_event, previous_event = split_query[1].split(' after ')
+    elif ' before ' in query:
+        split_query = query.split(' before ')
         main_event = split_query[0]
         next_event = split_query[1]
-    elif 'after' in query:
-        split_query = query.split('after')
+    elif ' after ' in query:
+        split_query = query.split(' after ')
         main_event = split_query[0]
         previous_event = split_query[1]
 
