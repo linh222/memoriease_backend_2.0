@@ -193,6 +193,7 @@ def RAG(question):
             'city': source['city'],
             'event_id': source['event_id'],
             'local_time': source['local_time']
+            'day_of_week': 'Sunday'
         }
         retrieved_result.append({
             "_index": hit["_index"],
