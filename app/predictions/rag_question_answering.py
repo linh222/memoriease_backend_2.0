@@ -200,7 +200,7 @@ def RAG(question):
             "_score": hit["_score"],
             "_source": extracted_source
         })
-
+    retrieved_result = [{'current_event': each_result} for each_result in retrieved_result['hits']['hits']]
     retrieved_result = add_image_link(retrieved_result)
     # Create prompt
     prompt = create_prompt(question, relevant_document)
