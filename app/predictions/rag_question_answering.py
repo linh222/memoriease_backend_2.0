@@ -35,7 +35,7 @@ def rag_retriever(question, size):
     filters = construct_filter(query_dict)
     query = {
         "_source": ['event_id', 'ImageID', 'local_time', 'long_description', 'city', 'time_diff', 'semantic_name',
-                    'medium_hour_diff'],
+                    'medium_hour_diff', 'day_of_week'],
         "size": size,
         "query": {
             "bool": {
