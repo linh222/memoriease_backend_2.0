@@ -18,6 +18,7 @@ from app.config import HOST, INDICES
 from app.predictions.visual_similarity import relevance_image_similar, calculate_mean_emb
 from app.predictions.utils import send_request_to_elasticsearch
 from app.predictions.predict import retrieve_image
+from app.predictions.rag_question_answering import rag_question_answering
 
 router = APIRouter()
 
@@ -120,7 +121,11 @@ async def conversation_search(feature: FeatureModelConversationalSearch, api_key
     # Output: the list of results and textual answer
     query = feature.query
     previous_chat = feature.previous_chat
-    result, return_answer = chat(query=query, previous_chat=previous_chat, model=model, txt_processors=txt_processor)
+    if '?' in query:
+        # perform RAG
+        result, return_answer = rag_question_answering(query=query, previous_chat=previous_chat)
+    else:
+        result, return_answer = chat(query=query, previous_chat=previous_chat, model=model, txt_processors=txt_processor)
     output_dict = {'results': result, 'textual_answer': return_answer}
     return output_dict
 
