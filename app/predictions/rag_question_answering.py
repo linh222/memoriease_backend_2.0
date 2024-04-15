@@ -185,9 +185,9 @@ def RAG(question):
     predefined_key = ['ImageID', 'new_name', 'city', 'event_id', 'local_time']
     relevant_document = rag_retriever(question, 50)
     for document in relevant_document['hits']['hits']:
-        for key in document['sources']:
+        for key in document['_source']:
             if key not in predefined_key:
-                document['sources'].pop(key)
+                document['_source'].pop(key)
     retrieved_result = [{'current_event': each_result} for each_result in relevant_document['hits']['hits']]
     retrieved_result = add_image_link(retrieved_result)
     # Create prompt
