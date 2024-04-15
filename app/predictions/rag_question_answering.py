@@ -182,15 +182,24 @@ def extract_question_component(question_query):
 
 def RAG(question):
     # retrieve all data
-    predefined_key = ['ImageID', 'new_name', 'city', 'event_id', 'local_time']
     relevant_document = rag_retriever(question, 50)
-    retrieved_result = relevant_document
-    # for document_index in range(len(relevant_document['hits']['hits'])):
-    #     for key in relevant_document['hits']['hits'][document_index]['_source']:
-    #         if key not in predefined_key:
-    #             retrieved_result['hits']['hits'][document_index]['_source'].pop(key)
-    # retrieved_result = [{'current_event': each_result} for each_result in retrieved_result['hits']['hits']]
-    # retrieved_result = add_image_link(retrieved_result)
+    retrieved_result = []
+
+    for hit in relevant_document['hits']['hits']:
+        source = hit['_source']
+        extracted_source = {
+            'ImageID': source['ImageID'],
+            'new_name': source['new_name'],
+            'city': source['city'],
+            'event_id': source['event_id'],
+            'local_time': source['local_time']
+        }
+        retrieved_result.append({
+            "_index": hit["_index"],
+            "_id": hit["_id"],
+            "_score": hit["_score"],
+            "_source": extracted_source
+        })
     # Create prompt
     prompt = create_prompt(question, relevant_document)
     logging.info(f'RAG: prompt for LLM: {prompt}')
