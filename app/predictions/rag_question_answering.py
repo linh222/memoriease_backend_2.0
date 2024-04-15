@@ -189,7 +189,7 @@ def RAG(question):
         source = hit['_source']
         extracted_source = {
             'ImageID': source['ImageID'],
-            'new_name': source['new_name'],
+            'new_name': source['semantic_name'],
             'city': source['city'],
             'event_id': source['event_id'],
             'local_time': source['local_time']
