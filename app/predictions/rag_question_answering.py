@@ -192,7 +192,7 @@ def RAG(question):
             'new_name': source['semantic_name'],
             'city': source['city'],
             'event_id': source['event_id'],
-            'local_time': source['local_time']
+            'local_time': source['local_time'],
             'day_of_week': 'Sunday'
         }
         retrieved_result.append({
