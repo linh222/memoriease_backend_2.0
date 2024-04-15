@@ -277,7 +277,7 @@ def rag_question_answering(query):
     #     answer = response['choices'][0]['message']['content']
     #     answer_dict['answer'] = answer
     #     logging.info(f"QA: context question result: {answer_dict}")
-    return textual_answer, retrieved_result
+    return retrieved_result, textual_answer
 
 # def answer_aggregation(result_dict):
 #     # Aggregate the results from LLM models, to get relevant results
