@@ -1,7 +1,7 @@
 import torch
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import APIKey
-from transformers import AutoModel, AutoTokenizer
+from sentence_transformers import SentenceTransformer
 
 from LAVIS.lavis.models import load_model_and_preprocess
 from app.api_key import get_api_key
@@ -36,8 +36,8 @@ def initialize_resources():
     )
 
     model_path = "/home/ltran/spinning-storage/ltran/llm/gte-base-en-v1.5"
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-    embedding_model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
+
+    embedding_model = SentenceTransformer(model_path, trust_remote_code=True)
     embedding_model.to(device)
 
     # instruct_model, instruct_vis_processor, instruct_txt_processor = load_model_and_preprocess(
@@ -130,8 +130,8 @@ async def conversation_search(feature: FeatureModelConversationalSearch, api_key
     previous_chat = feature.previous_chat
     if '?' in query:
         # perform RAG
-        result, return_answer = rag_question_answering(query=query, previous_chat=previous_chat, device=device,
-                                                       embedding_model=embedding_model, tokenizer=tokenizer)
+        result, return_answer = rag_question_answering(query=query, previous_chat=previous_chat,
+                                                       embedding_model=embedding_model)
     else:
         result, return_answer = chat(query=query, previous_chat=previous_chat, model=model,
                                      txt_processors=txt_processor)
