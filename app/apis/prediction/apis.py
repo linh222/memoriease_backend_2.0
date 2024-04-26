@@ -1,6 +1,7 @@
 import torch
 from fastapi import APIRouter, Depends, status
 from fastapi.openapi.models import APIKey
+from transformers import AutoModel, AutoTokenizer
 
 from LAVIS.lavis.models import load_model_and_preprocess
 from app.api_key import get_api_key
@@ -27,17 +28,23 @@ router = APIRouter()
 def initialize_resources():
     # Load resource in the start
     global es, model, vis_processors, txt_processor, logger
-    global instruct_model, instruct_vis_processor, instruct_txt_processor, device
+    global embedding_model, tokenizer, device
 
     device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
     model, vis_processors, txt_processor = load_model_and_preprocess(
         name="blip2_feature_extractor", model_type="coco", is_eval=True, device=device
     )
+
+    model_path = "/home/ltran/spinning-storage/ltran/llm/gte-base-en-v1.5"
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    embedding_model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
+    embedding_model.to(device)
+
     # instruct_model, instruct_vis_processor, instruct_txt_processor = load_model_and_preprocess(
     #     name="blip2_t5_instruct", model_type="flant5xl", is_eval=True, device=device
     # )
 
-    print('Loading 2 models successfully at ', device)
+    print('Loading models successfully at ', device)
 
 
 @router.post(
@@ -123,9 +130,11 @@ async def conversation_search(feature: FeatureModelConversationalSearch, api_key
     previous_chat = feature.previous_chat
     if '?' in query:
         # perform RAG
-        result, return_answer = rag_question_answering(query=query, previous_chat=previous_chat)
+        result, return_answer = rag_question_answering(query=query, previous_chat=previous_chat, device=device,
+                                                       embedding_model=embedding_model, tokenizer=tokenizer)
     else:
-        result, return_answer = chat(query=query, previous_chat=previous_chat, model=model, txt_processors=txt_processor)
+        result, return_answer = chat(query=query, previous_chat=previous_chat, model=model,
+                                     txt_processors=txt_processor)
     output_dict = {'results': result, 'textual_answer': return_answer}
     return output_dict
 
