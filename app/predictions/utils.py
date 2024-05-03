@@ -252,7 +252,7 @@ def construct_filter(query_dict):
     if 'semantic_name' in query_dict:
         if query_dict['semantic_name'] != '':
             filter.append({
-                "term": {
+                "match": {
                     'new_name': query_dict['semantic_name']
                 }
             })
