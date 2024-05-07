@@ -40,8 +40,7 @@ def rag_retriever(question, size, embedding_model):
 
     filters = construct_filter(query_dict)
     query = {
-        "_source": ['event_id', 'ImageID', 'local_time', 'long_description', 'city', 'time_diff', 'semantic_name',
-                    'medium_hour_diff', 'day_of_week'],
+        "_source": ['event_id', 'ImageID', 'local_time', 'description', 'city', 'new_name', 'day_of_week'],
         "size": size,
         "knn": {
             "field": "embedding",
@@ -86,7 +85,7 @@ def create_prompt(question, relevant_document):
     hits = relevant_document['hits']['hits']
     prompt = f'Answer this question {question} based on the provided information with short explaination: \n'
     for hit in hits:
-        prompt += f"Image id {hit['_source']['ImageID']}: {hit['_source']['long_description']} at" \
+        prompt += f"Image id {hit['_source']['ImageID']}: {hit['_source']['description']} at" \
                   f" {hit['_source']['local_time']} in {hit['_source']['city']} \n "
 
     return prompt
@@ -193,7 +192,7 @@ def RAG(question, embedding_model):
         source = hit['_source']
         extracted_source = {
             'ImageID': source['ImageID'],
-            'new_name': source['semantic_name'],
+            'new_name': source['new_name'],
             'city': source['city'],
             'event_id': source['event_id'],
             'local_time': source['local_time'],
