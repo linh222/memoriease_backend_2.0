@@ -33,7 +33,8 @@ def rag_retriever(question, size, embedding_model):
         "weekday": weekday,
         "time_filter": time_filter
     }
-
+    logging.info(f"RAG: Query dictionary: {query_dict}")
+    logging.info(f"RAG: Question formulation: {processed_query}")
     # embed the query
     embeddings = embedding_model.encode([processed_query])
     embeddings = embeddings.tolist()
