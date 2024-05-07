@@ -168,7 +168,7 @@ def process_query(sent):
 def construct_filter(query_dict):
     # Construct filter format for elastic search
     filter = []
-    if query_dict['time_period'] not in query_dict:
+    if 'time_period' in query_dict:
         if query_dict['time_period'] != '':
             filter.append({
                 "term": {
