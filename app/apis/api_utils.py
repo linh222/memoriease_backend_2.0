@@ -27,16 +27,19 @@ def add_image_link(results):
                                                                      image_name, IMAGE_EXT)
             # similar images
             list_similar_image = []
-            event_id = int(result['current_event']['_source']['event_id'])
-            sim_image = df_event[df_event['event_id'] == event_id]['path'].values
-            if sim_image.shape[0] > 1:
-                for img in range(sim_image.shape[0]):
-                    image_id = sim_image[img]
-                    if image_id != image_name:
-                        image_name, year_month, day = extract_date_imagename(image_id)
-                        list_similar_image.append(
-                            '{}/{}/{}/{}.{}'.format(IMAGE_SERVER, year_month, day, image_name, IMAGE_EXT))
-            result['current_event']['_source']['similar_images'] = list_similar_image
+            try:
+                event_id = int(result['current_event']['_source']['event_id'])
+                sim_image = df_event[df_event['event_id'] == event_id]['path'].values
+                if sim_image.shape[0] > 1:
+                    for img in range(sim_image.shape[0]):
+                        image_id = sim_image[img]
+                        if image_id != image_name:
+                            image_name, year_month, day = extract_date_imagename(image_id)
+                            list_similar_image.append(
+                                '{}/{}/{}/{}.{}'.format(IMAGE_SERVER, year_month, day, image_name, IMAGE_EXT))
+                result['current_event']['_source']['similar_images'] = list_similar_image
+            except Exception as e:
+                result['current_event']['_source']['similar_images'] = []
     return results
 
 
