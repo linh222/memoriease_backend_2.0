@@ -27,9 +27,7 @@ def rag_retriever(question, size, embedding_model):
 
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(question)
     query_dict = {
-        "time_period": time_period,
         "location": location,
-        "list_keyword": list_keyword,
         "weekday": weekday,
         "time_filter": time_filter
     }
