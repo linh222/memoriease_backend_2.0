@@ -229,6 +229,7 @@ def rag_question_answering(query, previous_chat, embedding_model):
     # Extract different component of the query
     logging.info(f'QA: Query processing for query: {retrieving_query}')
     context, question, question_confirm = extract_question_component(retrieving_query)
+    logging.info(f"QA: question: {question}")
     # Classify the type of question, visual or non-visual. This is for old method, now is no branching
     question_type = question_classification(question)
     logging.info(f"QA: Classified question type: {question_type}")
