@@ -25,6 +25,7 @@ IMAGE_SERVER = os.environ.get('image_server')
 GROUP_INDICES = os.environ.get('group_indices')
 BUCKET = os.environ.get('bucket')
 IMAGE_EXT = os.environ.get('image_ext')
+model_rag_path = os.environ.get('model_rag_path')
 
 
 def get_project_root() -> Path:

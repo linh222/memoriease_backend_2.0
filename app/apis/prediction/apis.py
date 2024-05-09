@@ -15,7 +15,7 @@ from .schemas import (
     FeatureModelVisualSimilarity
 )
 import json
-from app.config import HOST, INDICES
+from app.config import HOST, INDICES, model_rag_path
 from app.predictions.visual_similarity import relevance_image_similar, calculate_mean_emb
 from app.predictions.utils import send_request_to_elasticsearch
 from app.predictions.predict import retrieve_image
@@ -35,9 +35,9 @@ def initialize_resources():
         name="blip2_feature_extractor", model_type="coco", is_eval=True, device=device
     )
 
-    model_path = "/home/ltran/spinning-storage/ltran/llm/gte-base-en-v1.5"
 
-    embedding_model = SentenceTransformer(model_path, trust_remote_code=True)
+
+    embedding_model = SentenceTransformer(model_rag_path, trust_remote_code=True)
     embedding_model.to(device)
 
     # instruct_model, instruct_vis_processor, instruct_txt_processor = load_model_and_preprocess(
