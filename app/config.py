@@ -25,7 +25,8 @@ IMAGE_SERVER = os.environ.get('image_server')
 GROUP_INDICES = os.environ.get('group_indices')
 BUCKET = os.environ.get('bucket')
 IMAGE_EXT = os.environ.get('image_ext')
-
+model_rag_path = os.environ.get('model_rag_path')
+embed_directory = os.environ.get('embed_directory')
 
 def get_project_root() -> Path:
     return Path(__file__).parent.parent
@@ -38,8 +39,6 @@ class Settings(BaseSettings):
     APP_NAME: str = "MemoriEase Backend"
     API_MODEL_VERSION = '2.0'
     MODEL_PATH = '{}/app/models/model_base_retrieval_coco.pth'.format(root_path)
-    image_directory = '/home/ltran/spinning-storage/ltran/LSC23_webp'
-    embed_directory = '/home/ltran/spinning-storage/ltran/blip2_embedding'
 
 
 settings = Settings()
