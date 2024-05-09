@@ -36,7 +36,6 @@ def initialize_resources():
     )
 
 
-
     embedding_model = SentenceTransformer(model_rag_path, trust_remote_code=True)
     embedding_model.to(device)
 
