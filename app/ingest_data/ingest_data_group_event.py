@@ -6,9 +6,9 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from tqdm import tqdm
 
-from config import HOST, root_path
+from app.config import HOST, root_path
 
-dotenv_path = join(dirname(__file__), '../.env')
+dotenv_path = join(dirname(__file__), '../../.env')
 load_dotenv(dotenv_path)
 
 es = Elasticsearch(hosts=[HOST], timeout=100)
