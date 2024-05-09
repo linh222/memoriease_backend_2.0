@@ -82,11 +82,11 @@ def ask_llm(prompt):
 
 def create_prompt(question, relevant_document):
     hits = relevant_document['hits']['hits']
-    prompt = f'Answer this question {question} based on the provided information with short explaination: \n'
+    prompt = ''
     for hit in hits:
         prompt += f"Image id {hit['_source']['ImageID']}: {hit['_source']['description']} at" \
                   f" {hit['_source']['local_time']} in {hit['_source']['city']} \n "
-
+    prompt += f'Answer this question {question} based on the provided information with short explaination. Answer: '
     return prompt
 
 
