@@ -25,6 +25,9 @@ schema = {
             "city": {"type": "text"},
             "local_time": {"type": "date"},
             "day_of_week": {"type": "text"},
+            "hour": {"type": "integer"},
+            "is_weekend": {"type": "integer"},
+            "time_period": {"type": "text"},
             "embedding": {"type": "dense_vector", "dims": 768,
                           "index": True, "similarity": "cosine"
                           }
