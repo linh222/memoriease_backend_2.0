@@ -97,8 +97,8 @@ def time_contructor(date):
 
 
 valid_time_period = {'early morning': 'early morning', 'dawn': 'early morning', 'sunrise': 'early morning',
-                     'daybreak': 'early morning', 'morning': 'morning', 'breakfast': 'morning', 'night': 'night',
-                     'nightfall': 'night', 'dusk': 'night', 'dinner': 'night', 'dinnertime': 'night', 'sunset': 'night',
+                     'daybreak': 'early morning', 'morning': 'morning',
+                     'nightfall': 'night', 'dusk': 'night', 'dinnertime': 'night', 'sunset': 'night',
                      'twilight': 'night', 'afternoon': 'afternoon', 'supper': 'afternoon', 'suppertime': 'afternoon',
                      'teatime': 'afternoon', 'late night': 'late night', 'midnight': 'late night', 'evening': 'night'}
 
