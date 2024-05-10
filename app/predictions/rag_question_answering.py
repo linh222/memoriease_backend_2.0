@@ -32,9 +32,9 @@ def rag_retriever(question, size, embedding_model):
         "time_filter": time_filter
     }
     logging.info(f"RAG: Query dictionary: {query_dict}")
-    logging.info(f"RAG: Question formulation: {processed_query}")
+    logging.info(f"RAG: Question formulation: {question}")
     # embed the query
-    embeddings = embedding_model.encode([processed_query])
+    embeddings = embedding_model.encode([question])
     embeddings = embeddings.tolist()
 
     filters = construct_filter(query_dict)
