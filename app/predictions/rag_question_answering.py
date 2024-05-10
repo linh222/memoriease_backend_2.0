@@ -32,9 +32,9 @@ def rag_retriever(question, size, embedding_model):
         "time_filter": time_filter
     }
     logging.info(f"RAG: Query dictionary: {query_dict}")
-    logging.info(f"RAG: Question formulation: {processed_query}")
+    logging.info(f"RAG: Question formulation: {question}")
     # embed the query
-    embeddings = embedding_model.encode([processed_query])
+    embeddings = embedding_model.encode([question])
     embeddings = embeddings.tolist()
 
     filters = construct_filter(query_dict)
@@ -71,7 +71,7 @@ def ask_llm(prompt):
             }
         ],
         temperature=1,
-        max_tokens=512,
+        max_tokens=4096,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0
@@ -82,11 +82,11 @@ def ask_llm(prompt):
 
 def create_prompt(question, relevant_document):
     hits = relevant_document['hits']['hits']
-    prompt = f'Answer this question {question} based on the provided information with short explaination: \n'
+    prompt = ''
     for hit in hits:
         prompt += f"Image id {hit['_source']['ImageID']}: {hit['_source']['description']} at" \
                   f" {hit['_source']['local_time']} in {hit['_source']['city']} \n "
-
+    prompt += f'Answer this question {question} based on the provided information with short explaination. Answer: '
     return prompt
 
 

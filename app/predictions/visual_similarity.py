@@ -1,5 +1,5 @@
 import numpy as np
-from app.config import settings, HOST, INDICES
+from app.config import embed_directory, HOST, INDICES
 import json
 import logging
 from app.predictions.utils import process_query, construct_filter, send_request_to_elasticsearch
@@ -23,7 +23,7 @@ def calculate_mean_emb(image_id):
     # Aggregate the input images by mean
     list_embed = []
     for image in image_id:
-        emb = load_img_and_emb(image, settings.embed_directory)
+        emb = load_img_and_emb(image, embed_directory)
         list_embed.append(emb)
     avg_embed = sum(list_embed) / len(list_embed)
     return avg_embed
