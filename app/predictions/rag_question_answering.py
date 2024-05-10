@@ -184,7 +184,7 @@ def extract_question_component(question_query):
 
 def RAG(question, embedding_model):
     # retrieve all data
-    relevant_document = rag_retriever(question, 100, embedding_model)
+    relevant_document = rag_retriever(question, 50, embedding_model)
     retrieved_result = []
 
     for hit in relevant_document['hits']['hits']:
