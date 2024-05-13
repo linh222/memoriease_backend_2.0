@@ -5,7 +5,7 @@ from parsedatetime import Constants, Calendar
 from .common import *
 
 more_timeofday = {"early; morning": ["dawn", "sunrise", "daybreak"],
-                  "evening": ["nightfall", "dusk", "dinner", "dinnertime", "sunset", "twilight"],
+                  "evening": ["nightfall", "dusk", "dinnertime", "sunset", "twilight"],
                   "noon": ["midday", "lunchtime"],
                   "night": ["nighttime"],
                   "afternoon": ["supper", "suppertime", "teatime"]}
