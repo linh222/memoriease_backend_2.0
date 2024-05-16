@@ -41,14 +41,24 @@ def rag_retriever(question, size, embedding_model):
     query = {
         "_source": ['event_id', 'ImageID', 'local_time', 'description', 'city', 'new_name', 'day_of_week'],
         "size": size,
-        "knn": {
-            "field": "embedding",
-            "query_vector": embeddings[0],
-            "k": size,
-            "num_candidates": 1000,
-            # "boost": 1,
-            "filter": filters
-        },
+        "query": {
+            "bool": {
+                "must": {
+                    "match": {
+                        "description": question
+                    }
+                },
+                "filter": filters
+            }
+        }
+        # "knn": {
+        #     "field": "embedding",
+        #     "query_vector": embeddings[0],
+        #     "k": size,
+        #     "num_candidates": 1000,
+        #     # "boost": 1,
+        #     "filter": filters
+        # },
     }
     json_query = json.dumps(query)
     response = requests.post(url, data=json_query, headers={'Content-Type': 'application/json'})
