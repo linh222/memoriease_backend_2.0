@@ -12,9 +12,12 @@ from openai import OpenAI
 
 from app.config import HOST, RAG_INDICES
 from app.config import root_path
-from app.predictions.utils import process_query, construct_filter
 from app.apis.api_utils import add_image_link
 from app.predictions.chat_conversation import aggregate_multiround_chat
+from app.config import HOST, INDICES
+from app.predictions.blip_extractor import extract_query_blip_embedding
+from app.predictions.utils import process_query, construct_filter, build_query_template, send_request_to_elasticsearch,\
+    extract_advanced_filter, add_advanced_filters
 
 logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -41,24 +44,24 @@ def rag_retriever(question, size, embedding_model):
     query = {
         "_source": ['event_id', 'ImageID', 'local_time', 'description', 'city', 'new_name', 'day_of_week'],
         "size": size,
-        "query": {
-            "bool": {
-                "must": {
-                    "match": {
-                        "description": question
-                    }
-                },
-                "filter": filters
-            }
-        }
-        # "knn": {
-        #     "field": "embedding",
-        #     "query_vector": embeddings[0],
-        #     "k": size,
-        #     "num_candidates": 1000,
-        #     # "boost": 1,
-        #     "filter": filters
-        # },
+        # "query": {
+        #     "bool": {
+        #         "must": {
+        #             "match": {
+        #                 "description": question
+        #             }
+        #         },
+        #         "filter": filters
+        #     }
+        # }
+        "knn": {
+            "field": "embedding",
+            "query_vector": embeddings[0],
+            "k": size,
+            "num_candidates": 1000,
+            # "boost": 1,
+            "filter": filters
+        },
     }
     json_query = json.dumps(query)
     response = requests.post(url, data=json_query, headers={'Content-Type': 'application/json'})
@@ -90,11 +93,13 @@ def ask_llm(prompt):
     return response.choices[0].message.content
 
 
-def create_prompt(question, relevant_document):
+def create_prompt(question, relevant_document, results):
     hits = relevant_document['hits']['hits']
     prompt = ''
     for hit in hits:
         prompt += f"Image id {hit['_source']['ImageID']}: {hit['_source']['description']} \n"
+    for result in results['hits']['hits']:
+        prompt += f"Image id {result['_source']['ImageID']}: {result['_source']['description']} \n"
     prompt += f'Answer this question {question} based on the provided information with short explaination. Answer: '
     return prompt
 
@@ -191,10 +196,33 @@ def extract_question_component(question_query):
     return context_query_return, question_to_ask_return, question_to_confirm_return
 
 
-def RAG(question, embedding_model):
-    # retrieve all data
+def RAG(question, embedding_model, blip_model, txt_processor):
+    # retrieve episode event
     relevant_document = rag_retriever(question, 50, embedding_model)
     retrieved_result = []
+
+    # retrieve image event
+    returned_query, advanced_filters = extract_advanced_filter(question)
+    logging.info(f"Retrieve: Extracted advanced search: {advanced_filters}")
+    # Processing the query
+    processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(returned_query)
+    text_embedding = extract_query_blip_embedding(processed_query, blip_model, txt_processor)
+    logging.info(f"Retrieved: Embeded query: {processed_query}")
+    query_dict = {
+        "time_period": time_period,
+        "location": location,
+        "list_keyword": list_keyword,
+        "weekday": weekday,
+        "time_filter": time_filter
+    }
+    if len(advanced_filters) > 0:
+        query_dict = add_advanced_filters(advanced_filters, query_dict)
+    logging.info(f"Retrieve: Query dictionary: {query_dict}")
+    filters = construct_filter(query_dict)
+    col = ["day_of_week", "ImageID", "local_time", "new_name", 'description',  'city']
+    query_template = build_query_template(filters, text_embedding, size=50, col=col)
+    query_template = json.dumps(query_template)
+    results = send_request_to_elasticsearch(HOST, INDICES, query_template)
 
     for hit in relevant_document['hits']['hits']:
         source = hit['_source']
@@ -215,7 +243,7 @@ def RAG(question, embedding_model):
     retrieved_result = [{'current_event': each_result} for each_result in retrieved_result]
     retrieved_result = add_image_link(retrieved_result)
     # Create prompt
-    prompt = create_prompt(question, relevant_document)
+    prompt = create_prompt(question, relevant_document, results)
     logging.info(f'RAG: prompt for LLM: {prompt}')
     # print(prompt, '\n ')
     # Ask LLM
