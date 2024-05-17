@@ -223,7 +223,7 @@ def RAG(question, embedding_model, blip_model, txt_processor):
     query_template = build_query_template(filters, text_embedding, size=50, col=col)
     query_template = json.dumps(query_template)
     results = send_request_to_elasticsearch(HOST, INDICES, query_template)
-
+    logging.info(f"RAG: Retrieved results: {results}")
     for hit in relevant_document['hits']['hits']:
         source = hit['_source']
         extracted_source = {
@@ -243,6 +243,7 @@ def RAG(question, embedding_model, blip_model, txt_processor):
     retrieved_result = [{'current_event': each_result} for each_result in retrieved_result]
     retrieved_result = add_image_link(retrieved_result)
     # Create prompt
+
     prompt = create_prompt(question, relevant_document, results)
     logging.info(f'RAG: prompt for LLM: {prompt}')
     # print(prompt, '\n ')
