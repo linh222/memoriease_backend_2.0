@@ -130,7 +130,8 @@ async def conversation_search(feature: FeatureModelConversationalSearch, api_key
     if '?' in query:
         # perform RAG
         result, return_answer = rag_question_answering(query=query, previous_chat=previous_chat,
-                                                       embedding_model=embedding_model)
+                                                       embedding_model=embedding_model, blip_model=model,
+                                                       txt_processor=txt_processor)
     else:
         result, return_answer = chat(query=query, previous_chat=previous_chat, model=model,
                                      txt_processors=txt_processor)
