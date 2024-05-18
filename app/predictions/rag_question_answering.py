@@ -19,6 +19,7 @@ from app.predictions.blip_extractor import extract_query_blip_embedding
 from app.predictions.utils import process_query, construct_filter, build_query_template, send_request_to_elasticsearch,\
     extract_advanced_filter, add_advanced_filters
 
+
 logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 load_dotenv(str(root_path) + '/.env')
@@ -174,13 +175,11 @@ def extract_question_component(question_query):
     context_query_return = ''
     for cxt in context_query:
         context_query_return += (' ' + cxt[0])
-
     question_to_ask = question_word + question_verb + question_context + context
     question_to_ask_return = ''
     for cxt in question_to_ask:
-        if cxt[1] != 'CD':
             question_to_ask_return += (' ' + cxt[0])
-
+    question_to_ask_return += '?'
     question_to_confirm = question_context + context
     if len(question_verb) == 0:  # Question start with a verb
         question_to_confirm_return = ''
@@ -198,11 +197,13 @@ def extract_question_component(question_query):
 
 def RAG(question, embedding_model, blip_model, txt_processor):
     # retrieve episode event
-    relevant_document = rag_retriever(question, 50, embedding_model)
+    relevant_document = rag_retriever(question, 30, embedding_model)
     retrieved_result = []
 
     # retrieve image event
-    returned_query, advanced_filters = extract_advanced_filter(question)
+    context_query_return, question_to_ask_return, question_to_confirm_return = \
+        extract_question_component(question)
+    returned_query, advanced_filters = extract_advanced_filter(context_query_return)
     logging.info(f"Retrieve: Extracted advanced search: {advanced_filters}")
     # Processing the query
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(returned_query)
@@ -220,7 +221,7 @@ def RAG(question, embedding_model, blip_model, txt_processor):
     logging.info(f"Retrieve: Query dictionary: {query_dict}")
     filters = construct_filter(query_dict)
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'description',  'city']
-    query_template = build_query_template(filters, text_embedding, size=50, col=col)
+    query_template = build_query_template(filters, text_embedding, size=30, col=col)
     query_template = json.dumps(query_template)
     results = send_request_to_elasticsearch(HOST, INDICES, query_template)
     logging.info(f"RAG: Retrieved results: {results}")
@@ -244,7 +245,7 @@ def RAG(question, embedding_model, blip_model, txt_processor):
     retrieved_result = add_image_link(retrieved_result)
     # Create prompt
 
-    prompt = create_prompt(question, relevant_document, results)
+    prompt = create_prompt(question_to_ask_return, relevant_document, results)
     logging.info(f'RAG: prompt for LLM: {prompt}')
     # print(prompt, '\n ')
     # Ask LLM
@@ -337,3 +338,11 @@ def rag_question_answering(query, previous_chat, embedding_model, blip_model, tx
 #         list_answer = list(result_dict.values())
 #         final_result = {item: list_answer.count(item) for item in list_answer}
 #         return final_result
+
+
+if __name__ == "__main__":
+    context_query_return, question_to_ask_return, question_to_confirm_return = \
+        extract_question_component("Summary what did I do in 10th January 2019?")
+    print('Context', context_query_return)
+    print('Ask question', question_to_ask_return)
+    print('Confirm question', question_to_confirm_return)
