@@ -221,12 +221,28 @@ def RAG(question, embedding_model, blip_model, txt_processor):
         query_dict = add_advanced_filters(advanced_filters, query_dict)
     logging.info(f"Retrieve: Query dictionary: {query_dict}")
     filters = construct_filter(query_dict)
-    col = ["day_of_week", "ImageID", "local_time", "new_name", 'description',  'city']
+    col = ["day_of_week", "ImageID", "local_time", "new_name", 'description', 'event_id', 'city']
     query_template = build_query_template(filters, text_embedding, size=30, col=col)
     query_template = json.dumps(query_template)
     results = send_request_to_elasticsearch(HOST, INDICES, query_template)
-    logging.info(f"RAG: Retrieved results: {results}")
+
     for hit in relevant_document['hits']['hits']:
+        source = hit['_source']
+        extracted_source = {
+            'ImageID': source['ImageID'],
+            'new_name': source['new_name'],
+            'city': source['city'],
+            'event_id': source['event_id'],
+            'local_time': source['local_time'],
+            'day_of_week': source['day_of_week']
+        }
+        retrieved_result.append({
+            "_index": hit["_index"],
+            "_id": hit["_id"],
+            "_score": hit["_score"],
+            "_source": extracted_source
+        })
+    for hit in results['hits']['hits']:
         source = hit['_source']
         extracted_source = {
             'ImageID': source['ImageID'],
