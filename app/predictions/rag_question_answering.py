@@ -203,12 +203,13 @@ def RAG(question, embedding_model, blip_model, txt_processor):
     # retrieve image event
     context_query_return, question_to_ask_return, question_to_confirm_return = \
         extract_question_component(question)
+    logging.info(f"RAG: Extracted question components: {context_query_return}, {question_to_ask_return}")
     returned_query, advanced_filters = extract_advanced_filter(context_query_return)
-    logging.info(f"Retrieve: Extracted advanced search: {advanced_filters}")
+    logging.info(f"RAG images: Extracted advanced search: {advanced_filters}")
     # Processing the query
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(returned_query)
     text_embedding = extract_query_blip_embedding(processed_query, blip_model, txt_processor)
-    logging.info(f"Retrieved: Embeded query: {processed_query}")
+    logging.info(f"RAG images: Embeded query: {processed_query}")
     query_dict = {
         "time_period": time_period,
         "location": location,
