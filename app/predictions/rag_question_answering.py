@@ -199,7 +199,7 @@ def extract_question_component(question_query):
 
 def RAG(question, embedding_model, blip_model, txt_processor):
     # retrieve episode event
-    relevant_document = rag_retriever(question, 30, embedding_model)
+    relevant_document = rag_retriever(question, 40, embedding_model)
     retrieved_result = []
 
     # retrieve image event
@@ -225,7 +225,7 @@ def RAG(question, embedding_model, blip_model, txt_processor):
     logging.info(f"Retrieve: Query dictionary: {query_dict}")
     filters = construct_filter(query_dict)
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'description', 'event_id', 'city']
-    query_template = build_query_template(filters, text_embedding, size=30, col=col)
+    query_template = build_query_template(filters, text_embedding, size=40, col=col)
     query_template = json.dumps(query_template)
     results = send_request_to_elasticsearch(HOST, INDICES, query_template)
 
