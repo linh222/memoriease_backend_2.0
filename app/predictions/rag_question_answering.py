@@ -100,7 +100,9 @@ def create_prompt(question, relevant_document, results):
     for hit in hits:
         prompt += f"Image id {hit['_source']['ImageID']}: {hit['_source']['description']} \n"
     for result in results['hits']['hits']:
-        prompt += f"Image id {result['_source']['ImageID']}: {result['_source']['description']} \n"
+        prompt += f"Image id {result['_source']['ImageID']}: {result['_source']['description']} at " \
+                  f"{result['_source']['local_time']} in {result['_source']['new_name']} in " \
+                  f"{result['_source']['city']} \n"
     prompt += f'Answer this question {question} based on the provided information with short explaination. Answer: '
     return prompt
 
@@ -206,6 +208,7 @@ def RAG(question, embedding_model, blip_model, txt_processor):
     logging.info(f"RAG: Extracted question components: {context_query_return}, {question_to_ask_return}")
     returned_query, advanced_filters = extract_advanced_filter(context_query_return)
     logging.info(f"RAG images: Extracted advanced search: {advanced_filters}")
+
     # Processing the query
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(returned_query)
     text_embedding = extract_query_blip_embedding(processed_query, blip_model, txt_processor)
