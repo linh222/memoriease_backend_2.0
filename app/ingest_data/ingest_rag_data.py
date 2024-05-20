@@ -14,7 +14,7 @@ dotenv_path = join(dirname(__file__), '../../.env')
 load_dotenv(dotenv_path)
 
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
-es = Elasticsearch(hosts=[HOST], timeout=100)
+es = Elasticsearch(hosts=[HOST], timeout=1000)
 schema = {
     "mappings": {
         "properties": {
@@ -38,7 +38,7 @@ if es.indices.exists(index=RAG_INDICES):
     es.indices.delete(index=RAG_INDICES)
 result = create_index(es=es, indice=RAG_INDICES, schema=schema)
 
-response = s3.get_object(Bucket=BUCKET, Key='lsc24_rag_description.json')
+response = s3.get_object(Bucket=BUCKET, Key='lsc24_rag_description_medium_big_episode.json')
 json_data = response['Body'].read().decode('utf-8')
 df = pd.read_json(
     StringIO(json_data),

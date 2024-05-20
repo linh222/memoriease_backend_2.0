@@ -308,9 +308,9 @@ def construct_filter(query_dict):
     return filter
 
 
-def build_query_template(filter, text_embedding, size=100):
+def build_query_template(filter, text_embedding, size=100, col=["day_of_week", "ImageID", "local_time", "new_name",
+                                                                'event_id', 'similar_image', 'city']):
     # Build the query template to send to elastic search
-    col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id', 'similar_image', 'city']
     query_template = {
 
         "knn": {

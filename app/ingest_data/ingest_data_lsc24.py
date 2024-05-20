@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from app.config import HOST, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET, INDICES
-from app.utils import create_index
+from config import HOST, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET, INDICES
+from utils import create_index
 
 dotenv_path = join(dirname(__file__), '../../.env')
 load_dotenv(dotenv_path)
 
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
-es = Elasticsearch(hosts=[HOST], timeout=100)
+es = Elasticsearch(hosts=[HOST], timeout=1000)
 schema = {
     "mappings": {
         "properties": {
@@ -33,10 +33,13 @@ schema = {
             "time_period": {"type": "text"},
             "blip_embed": {"type": "dense_vector", "dims": 256,
                            "index": True, "similarity": "cosine"
-                           }
+                           },
+            "description": {"type": "text"}
         }
     }
 }
+if es.indices.exists(index=INDICES):
+    es.indices.delete(index=INDICES)
 result = create_index(es=es, indice=INDICES, schema=schema)
 
 response = s3.get_object(Bucket=BUCKET, Key='grouped_info_dict_full_blip2_lsc24.json')

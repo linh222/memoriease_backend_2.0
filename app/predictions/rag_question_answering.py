@@ -12,9 +12,13 @@ from openai import OpenAI
 
 from app.config import HOST, RAG_INDICES
 from app.config import root_path
-from app.predictions.utils import process_query, construct_filter
 from app.apis.api_utils import add_image_link
 from app.predictions.chat_conversation import aggregate_multiround_chat
+from app.config import HOST, INDICES
+from app.predictions.blip_extractor import extract_query_blip_embedding
+from app.predictions.utils import process_query, construct_filter, build_query_template, send_request_to_elasticsearch,\
+    extract_advanced_filter, add_advanced_filters
+
 
 logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -41,6 +45,16 @@ def rag_retriever(question, size, embedding_model):
     query = {
         "_source": ['event_id', 'ImageID', 'local_time', 'description', 'city', 'new_name', 'day_of_week'],
         "size": size,
+        # "query": {
+        #     "bool": {
+        #         "must": {
+        #             "match": {
+        #                 "description": question
+        #             }
+        #         },
+        #         "filter": filters
+        #     }
+        # }
         "knn": {
             "field": "embedding",
             "query_vector": embeddings[0],
@@ -80,11 +94,15 @@ def ask_llm(prompt):
     return response.choices[0].message.content
 
 
-def create_prompt(question, relevant_document):
+def create_prompt(question, relevant_document, results):
     hits = relevant_document['hits']['hits']
     prompt = ''
     for hit in hits:
         prompt += f"Image id {hit['_source']['ImageID']}: {hit['_source']['description']} \n"
+    for result in results['hits']['hits']:
+        prompt += f"Image id {result['_source']['ImageID']}: {result['_source']['description']} at " \
+                  f"{result['_source']['local_time']} in {result['_source']['new_name']} in " \
+                  f"{result['_source']['city']} \n"
     prompt += f'Answer this question {question} based on the provided information with short explaination. Answer: '
     return prompt
 
@@ -159,13 +177,11 @@ def extract_question_component(question_query):
     context_query_return = ''
     for cxt in context_query:
         context_query_return += (' ' + cxt[0])
-
     question_to_ask = question_word + question_verb + question_context + context
     question_to_ask_return = ''
     for cxt in question_to_ask:
-        if cxt[1] != 'CD':
             question_to_ask_return += (' ' + cxt[0])
-
+    question_to_ask_return += '?'
     question_to_confirm = question_context + context
     if len(question_verb) == 0:  # Question start with a verb
         question_to_confirm_return = ''
@@ -181,12 +197,55 @@ def extract_question_component(question_query):
     return context_query_return, question_to_ask_return, question_to_confirm_return
 
 
-def RAG(question, embedding_model):
-    # retrieve all data
-    relevant_document = rag_retriever(question, 50, embedding_model)
+def RAG(question, embedding_model, blip_model, txt_processor):
+    # retrieve episode event
+    relevant_document = rag_retriever(question, 40, embedding_model)
     retrieved_result = []
 
+    # retrieve image event
+    context_query_return, question_to_ask_return, question_to_confirm_return = \
+        extract_question_component(question)
+    logging.info(f"RAG: Extracted question components: {context_query_return}, {question_to_ask_return}")
+    returned_query, advanced_filters = extract_advanced_filter(context_query_return)
+    logging.info(f"RAG images: Extracted advanced search: {advanced_filters}")
+
+    # Processing the query
+    processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(returned_query)
+    text_embedding = extract_query_blip_embedding(processed_query, blip_model, txt_processor)
+    logging.info(f"RAG images: Embeded query: {processed_query}")
+    query_dict = {
+        "time_period": time_period,
+        "location": location,
+        "list_keyword": list_keyword,
+        "weekday": weekday,
+        "time_filter": time_filter
+    }
+    if len(advanced_filters) > 0:
+        query_dict = add_advanced_filters(advanced_filters, query_dict)
+    logging.info(f"Retrieve: Query dictionary: {query_dict}")
+    filters = construct_filter(query_dict)
+    col = ["day_of_week", "ImageID", "local_time", "new_name", 'description', 'event_id', 'city']
+    query_template = build_query_template(filters, text_embedding, size=40, col=col)
+    query_template = json.dumps(query_template)
+    results = send_request_to_elasticsearch(HOST, INDICES, query_template)
+
     for hit in relevant_document['hits']['hits']:
+        source = hit['_source']
+        extracted_source = {
+            'ImageID': source['ImageID'],
+            'new_name': source['new_name'],
+            'city': source['city'],
+            'event_id': source['event_id'],
+            'local_time': source['local_time'],
+            'day_of_week': source['day_of_week']
+        }
+        retrieved_result.append({
+            "_index": hit["_index"],
+            "_id": hit["_id"],
+            "_score": hit["_score"],
+            "_source": extracted_source
+        })
+    for hit in results['hits']['hits']:
         source = hit['_source']
         extracted_source = {
             'ImageID': source['ImageID'],
@@ -205,7 +264,8 @@ def RAG(question, embedding_model):
     retrieved_result = [{'current_event': each_result} for each_result in retrieved_result]
     retrieved_result = add_image_link(retrieved_result)
     # Create prompt
-    prompt = create_prompt(question, relevant_document)
+
+    prompt = create_prompt(question_to_ask_return, relevant_document, results)
     logging.info(f'RAG: prompt for LLM: {prompt}')
     # print(prompt, '\n ')
     # Ask LLM
@@ -214,7 +274,7 @@ def RAG(question, embedding_model):
     return answer, retrieved_result
 
 
-def rag_question_answering(query, previous_chat, embedding_model):
+def rag_question_answering(query, previous_chat, embedding_model, blip_model, txt_processor):
     # This function is to answer a question based on the caption generated by BLIP2. It use RAG to retrieve the relevant
     # information and a LLM reader to generate the answer for the question.
     # Input: A question end with ? mark
@@ -233,7 +293,7 @@ def rag_question_answering(query, previous_chat, embedding_model):
     logging.info(f"QA: Classified question type: {question_type}")
 
     # Perform rag on the question
-    textual_answer, retrieved_result = RAG(question, embedding_model)
+    textual_answer, retrieved_result = RAG(question, embedding_model, blip_model, txt_processor)
     logging.info("QA: Finish QA")
     # answer_dict = {}
     # retrieved_context = ''
@@ -298,3 +358,11 @@ def rag_question_answering(query, previous_chat, embedding_model):
 #         list_answer = list(result_dict.values())
 #         final_result = {item: list_answer.count(item) for item in list_answer}
 #         return final_result
+
+
+if __name__ == "__main__":
+    context_query_return, question_to_ask_return, question_to_confirm_return = \
+        extract_question_component("Summary what did I do in 10th January 2019?")
+    print('Context', context_query_return)
+    print('Ask question', question_to_ask_return)
+    print('Confirm question', question_to_confirm_return)
