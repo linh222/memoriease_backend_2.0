@@ -10,11 +10,11 @@ from elasticsearch.helpers import bulk
 from config import HOST, AWS_ACCESS_KEY, AWS_SECRET_KEY, BUCKET, RAG_INDICES
 from utils import create_index
 
-dotenv_path = join(dirname(__file__), '../.env')
+dotenv_path = join(dirname(__file__), '../../.env')
 load_dotenv(dotenv_path)
 
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY)
-es = Elasticsearch(hosts=[HOST], timeout=100)
+es = Elasticsearch(hosts=[HOST], timeout=1000)
 schema = {
     "mappings": {
         "properties": {
