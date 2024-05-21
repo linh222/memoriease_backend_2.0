@@ -73,7 +73,7 @@ def ask_llm(prompt):
     client = OpenAI()
 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         messages=[
             {
                 "role": "system",
@@ -85,7 +85,7 @@ def ask_llm(prompt):
             }
         ],
         temperature=1,
-        max_tokens=4096,
+        max_tokens=8192,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0

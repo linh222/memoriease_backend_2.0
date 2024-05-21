@@ -54,7 +54,6 @@ def send_request_by_event(main_event_result, event_query, temporal_type):
     event_response = requests.get(HOST + '/_msearch?pretty',
                                   headers={'Content-Type': 'application/json'}, data=payload)
     result = event_response.json()
-
     for index in range(len(main_event_result)):
         # Add image link to results
         if len(result['responses'][index]['hits']['hits']) == 1:
@@ -76,7 +75,6 @@ def send_request_by_event(main_event_result, event_query, temporal_type):
                 main_event_result[index]['next_event'] = {'_id': None}
             else:
                 ValueError('type is wrong')
-
     return main_event_result
 
 
@@ -136,11 +134,9 @@ def temporal_search(concept_query, embed_model, txt_processor,
     if previous_event != "":
         full_result = send_request_by_event(main_event_result=full_result, event_query=list_previous_event_query,
                                             temporal_type='previous')
-
     if next_event != "":
         full_result = send_request_by_event(main_event_result=full_result, event_query=list_next_event_query,
                                             temporal_type='next')
-
     full_result = calculate_overall_score(full_result)
 
     return full_result
