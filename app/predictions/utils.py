@@ -115,7 +115,7 @@ def extract_advanced_filter(input_query):
 
 def add_advanced_filters(advanced_filters, query_dict):
     map_dict = {'weekend': "is_weekend", 'start': "start_hour", 'end': 'end_hour',
-                'location': 'city', 'ocr': 'ocr'}
+                'location': 'city', 'ocr': 'ocr', 'semantic': 'semantic_name'}
     for advanced_filter in advanced_filters:
         advanced_filter = advanced_filter.replace('@', '').split(':')
         advanced_filter[1] = advanced_filter[1].replace('_', ' ')

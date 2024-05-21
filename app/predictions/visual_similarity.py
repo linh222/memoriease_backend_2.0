@@ -2,7 +2,7 @@ import numpy as np
 from app.config import embed_directory, HOST, INDICES
 import json
 import logging
-from app.predictions.utils import process_query, construct_filter, send_request_to_elasticsearch
+from app.predictions.utils import process_query, construct_filter, send_request_to_elasticsearch, extract_advanced_filter, add_advanced_filters
 from app.predictions.predict import retrieve_image
 
 logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
@@ -33,14 +33,20 @@ def relevance_image_similar(image_embedding, query, image_id=None, size=100):
     if image_id is None:
         image_id = []
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'event_id']
+    returned_query, advanced_filters = extract_advanced_filter(query)
+    logging.info(f"Visual similarity: Extracted advanced search: {advanced_filters}")
     processed_query, list_keyword, time_period, weekday, time_filter, location = process_query(query)
     query_dict = {
-        'time_period': time_period,
-        'location': location,
-        'list_keyword': list_keyword,
-        'weekday': weekday,
-        'time_filter': time_filter
+        "time_period": time_period,
+        "location": location,
+        "list_keyword": list_keyword,
+        "weekday": weekday,
+        "time_filter": time_filter,
+        "semantic_name": ''
     }
+    if len(advanced_filters) > 0:
+        query_dict = add_advanced_filters(advanced_filters, query_dict)
+    logging.info(f"Visual similarity: Query dictionary: {query_dict}")
     logging.info(f"Visual similarity: query dict: {query_dict}")
     if len(image_id) > 0:
         query_dict['image_excluded'] = image_id
