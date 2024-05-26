@@ -159,7 +159,7 @@ async def visual_similarity(feature: FeatureModelVisualSimilarity, api_key: APIK
                     "functions": [{"random_score": {}}]
                 }
             },
-            "_source": col, "size": 100}
+            "_source": col, "size": 200}
         query_template = json.dumps(query_template)
         raw_result = send_request_to_elasticsearch(HOST, INDICES, query_template)
     elif query != '' and len(image_id) == 0:
