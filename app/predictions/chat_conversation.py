@@ -22,7 +22,8 @@ def textual_answer(query):
     # client = OpenAI()
     client = Groq(api_key=api_key)
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        # model="gpt-3.5-turbo",
+        model="llama3-8b-8192",
         messages=[
             {
                 "role": "system",
