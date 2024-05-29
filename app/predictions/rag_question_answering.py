@@ -73,7 +73,7 @@ def rag_retriever(question, size, embedding_model):
 
 def ask_llm(prompt):
     # client = OpenAI()
-    client = Groq(api_key)
+    client = Groq(api_key=api_key)
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
