@@ -54,3 +54,4 @@ tqdm==4.64.1
 transformers==4.40.1
 webdataset==0.2.86
 yapf==0.40.2
+groq==0.8.0

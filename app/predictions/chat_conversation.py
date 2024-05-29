@@ -4,6 +4,7 @@ import os
 import openai
 from dotenv import load_dotenv
 from openai import OpenAI
+from groq import Groq
 
 from app.apis.api_utils import add_image_link
 from app.config import root_path
@@ -14,12 +15,12 @@ from app.predictions.utils import temporal_extraction
 logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 load_dotenv(str(root_path) + '/.env')
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("groq_api_key")
 
 def textual_answer(query):
-    client = OpenAI()
-
+    # client = OpenAI()
+    client = Groq(api_key=api_key)
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[

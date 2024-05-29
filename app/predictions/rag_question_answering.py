@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from nltk import pos_tag
 from nltk.tokenize import WordPunctTokenizer
 from openai import OpenAI
+from groq import Groq
 
 from app.config import HOST, RAG_INDICES
 from app.config import root_path
@@ -23,7 +24,8 @@ from app.predictions.utils import process_query, construct_filter, build_query_t
 logging.basicConfig(filename='memoriease_backend.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 load_dotenv(str(root_path) + '/.env')
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("groq_api_key")
 
 
 def rag_retriever(question, size, embedding_model):
@@ -70,8 +72,8 @@ def rag_retriever(question, size, embedding_model):
 
 
 def ask_llm(prompt):
-    client = OpenAI()
-
+    # client = OpenAI()
+    client = Groq(api_key)
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -85,7 +87,7 @@ def ask_llm(prompt):
             }
         ],
         temperature=1,
-        max_tokens=4096,
+        max_tokens=8192,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0
@@ -199,7 +201,7 @@ def extract_question_component(question_query):
 
 def RAG(question, embedding_model, blip_model, txt_processor):
     # retrieve episode event
-    relevant_document = rag_retriever(question, 40, embedding_model)
+    relevant_document = rag_retriever(question, 30, embedding_model)
     retrieved_result = []
 
     # retrieve image event
@@ -225,7 +227,7 @@ def RAG(question, embedding_model, blip_model, txt_processor):
     logging.info(f"Retrieve: Query dictionary: {query_dict}")
     filters = construct_filter(query_dict)
     col = ["day_of_week", "ImageID", "local_time", "new_name", 'description', 'event_id', 'city']
-    query_template = build_query_template(filters, text_embedding, size=40, col=col)
+    query_template = build_query_template(filters, text_embedding, size=20, col=col)
     query_template = json.dumps(query_template)
     results = send_request_to_elasticsearch(HOST, INDICES, query_template)
 
