@@ -86,7 +86,7 @@ async def predict_image(feature: FeatureModelSingleSearch, api_key: APIKey = Dep
 
     # Perform search
     raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor,
-                                semantic_name=semantic_name)
+                                semantic_name=semantic_name, size=200)
     results = [{'current_event': result} for result in raw_result['hits']['hits']]
     results = add_image_link(results)
 
@@ -159,17 +159,17 @@ async def visual_similarity(feature: FeatureModelVisualSimilarity, api_key: APIK
                     "functions": [{"random_score": {}}]
                 }
             },
-            "_source": col, "size": 100}
+            "_source": col, "size": 200}
         query_template = json.dumps(query_template)
         raw_result = send_request_to_elasticsearch(HOST, INDICES, query_template)
     elif query != '' and len(image_id) == 0:
         # retrieve by query
-        raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor)
+        raw_result = retrieve_image(concept_query=query, embed_model=model, txt_processor=txt_processor, size=200)
     else:
         # Calculate the mean embedding of all image input
         mean_embedding = calculate_mean_emb(image_id=image_id)
         # Perform search by image embedding
-        raw_result = relevance_image_similar(image_embedding=mean_embedding, query=query, image_id=image_id)
+        raw_result = relevance_image_similar(image_embedding=mean_embedding, query=query, image_id=image_id, size=200)
     results = [{'current_event': result} for result in raw_result['hits']['hits']]
 
     results = add_image_link(results)
