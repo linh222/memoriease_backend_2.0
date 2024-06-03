@@ -31,7 +31,7 @@ def add_image_link(results):
                 event_id = int(result['current_event']['_source']['event_id'])
                 sim_image = df_event[df_event['event_id'] == event_id]['path'].values
                 if sim_image.shape[0] > 1:
-                    print(sim_image)
+                    print('old: ', sim_image)
                     sim_image.remove(image_id[:-4])
                     print('new: ', sim_image)
                     for img in range(sim_image.shape[0]):
