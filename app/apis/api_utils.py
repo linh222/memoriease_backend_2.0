@@ -1,6 +1,7 @@
 import logging
 import time
 from io import StringIO
+import numpy as np
 
 import boto3
 import pandas as pd
@@ -29,14 +30,11 @@ def add_image_link(results):
             list_similar_image = []
             try:
                 event_id = int(result['current_event']['_source']['event_id'])
-                sim_image = df_event[df_event['event_id'] == event_id]['path'].values.tolist()
-                if sim_image.shape[0] > 1:
-                    print('old: ', sim_image)
-                    print('image_id: ', image_id[:-4])
-                    sim_image.remove(image_id[:-4])
-
-                    print('new: ', sim_image)
-                    for img in range(sim_image.shape[0]):
+                sim_image = df_event[df_event['event_id'] == event_id]['path'].values
+                if len(sim_image) > 1:
+                    indices_to_remove = np.where(sim_image == image_id)
+                    sim_image = np.delete(sim_image, indices_to_remove)
+                    for img in range(len(sim_image)):
                         image_id = sim_image[img]
                         if image_id != image_name:
                             image_name, year_month, day = extract_date_imagename(image_id)
