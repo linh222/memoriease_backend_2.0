@@ -29,7 +29,7 @@ def add_image_link(results):
             list_similar_image = []
             try:
                 event_id = int(result['current_event']['_source']['event_id'])
-                sim_image = df_event[df_event['event_id'] == event_id]['path'].values
+                sim_image = df_event[df_event['event_id'] == event_id]['path'].values.tolist()
                 if sim_image.shape[0] > 1:
                     print('old: ', sim_image)
                     print('image_id: ', image_id[:-4])
