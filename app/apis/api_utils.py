@@ -32,7 +32,7 @@ def add_image_link(results):
                 event_id = int(result['current_event']['_source']['event_id'])
                 sim_image = df_event[df_event['event_id'] == event_id]['path'].values
                 if len(sim_image) > 1:
-                    indices_to_remove = np.where(sim_image == image_id)
+                    indices_to_remove = np.where(sim_image == image_id[:-4])
                     sim_image = np.delete(sim_image, indices_to_remove)
                     for img in range(len(sim_image)):
                         image_id = sim_image[img]
